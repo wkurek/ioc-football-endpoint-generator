@@ -10,11 +10,13 @@ interface LegendItemProps {
   examples: string;
   /** Longer explanation shown on hover/focus of the info icon. */
   hint: string;
+  /** Optional source URL — when present, rendered as a small monospace link. */
+  url?: string;
 }
 
-export function LegendItem({ swatchColor, label, examples, hint }: LegendItemProps) {
+export function LegendItem({ swatchColor, label, examples, hint, url }: LegendItemProps) {
   return (
-    <li className="flex items-center gap-2 text-sm">
+    <li className="flex flex-wrap items-center gap-2 text-sm">
       <span
         className={`inline-block h-3 w-3 flex-shrink-0 rounded-sm border ${swatchColor}`}
         aria-hidden="true"
@@ -41,6 +43,22 @@ export function LegendItem({ swatchColor, label, examples, hint }: LegendItemPro
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
+      {url && (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer noopener"
+          title={url}
+          className="ml-auto max-w-full truncate font-mono text-[11px] text-blue-600 hover:underline dark:text-blue-400"
+        >
+          {extractFileName(url)}
+        </a>
+      )}
     </li>
   );
+}
+
+function extractFileName(url: string): string {
+  const i = url.lastIndexOf('/');
+  return i >= 0 ? url.slice(i + 1) : url;
 }

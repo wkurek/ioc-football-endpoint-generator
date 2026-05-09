@@ -12,6 +12,7 @@ export function MatchDetailPage() {
   const { eventUnitCode } = useParams<{ eventUnitCode: string }>();
   const { t } = useTranslation();
   const { enabled, setEnabled, pipeline } = useMatchesState();
+  const retry = pipeline.retry;
 
   // Auto-load if user lands here via deep-link without first visiting /.
   useEffect(() => {
@@ -45,7 +46,7 @@ export function MatchDetailPage() {
       )}
 
       {entry && entry.buildError && (
-        <Banner kind="error" icon={AlertTriangle}>
+        <Banner kind="error" icon={AlertTriangle} onRetry={retry}>
           Failed to build match: {entry.buildError.message}
         </Banner>
       )}
@@ -60,7 +61,7 @@ export function MatchDetailPage() {
         <>
           <MatchHeader match={entry.match} />
           <MatchActions code={entry.code} match={entry.match} />
-          <MatchTabs match={entry.match} />
+          <MatchTabs match={entry.match} eventUnitCode={entry.code} />
         </>
       )}
     </div>

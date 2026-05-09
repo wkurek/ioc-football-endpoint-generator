@@ -14,6 +14,7 @@ import {
   ResByRscH2HSchema,
   type SchSchedule,
 } from '@/data/api/schemas';
+import { MatchSchema } from '@/domain/matchSchema';
 
 const FIXTURES = join(process.cwd(), 'test', 'fixtures');
 const RES_ALL_DIR = join(FIXTURES, 'res-all');
@@ -59,5 +60,31 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
       throw new Error(`${ok}/${schedules.length} succeeded, ${errors.length} failed:\n${summary}`);
     }
     expect(ok).toBe(58);
+  });
+
+  it('every generated match conforms to the example.json schema', () => {
+    const errors: Array<{ code: string; error: string }> = [];
+    for (const sch of schedules) {
+      const code = sch.eventUnit.code;
+      const path = join(RES_ALL_DIR, `${code}.json`);
+      if (!existsSync(path)) continue;
+      const resJson = JSON.parse(readFileSync(path, 'utf8'));
+      const res = ResByRscH2HSchema.parse(resJson);
+      const match = buildMatch({ sch, res, allMatches: schedules });
+      const result = MatchSchema.safeParse(match);
+      if (!result.success) {
+        errors.push({
+          code,
+          error: result.error.issues
+            .map((i) => `${i.path.join('.')}: ${i.message}`)
+            .join('; '),
+        });
+      }
+    }
+    if (errors.length > 0) {
+      const summary = errors.map((e) => `  ${e.code}\n    ${e.error}`).join('\n');
+      throw new Error(`Schema-conformance failed for ${errors.length} matches:\n${summary}`);
+    }
+    expect(errors).toHaveLength(0);
   });
 });

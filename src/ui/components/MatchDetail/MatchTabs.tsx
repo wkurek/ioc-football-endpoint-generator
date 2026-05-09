@@ -6,9 +6,10 @@ import { ParsedView } from './ParsedView';
 
 interface MatchTabsProps {
   match: Match;
+  eventUnitCode: string;
 }
 
-export function MatchTabs({ match }: MatchTabsProps) {
+export function MatchTabs({ match, eventUnitCode }: MatchTabsProps) {
   const { t } = useTranslation();
 
   return (
@@ -32,7 +33,7 @@ export function MatchTabs({ match }: MatchTabsProps) {
       </Tabs.List>
 
       <Tabs.Content value="generated" className="focus-visible:outline-none">
-        <GeneratedView match={match} />
+        <GeneratedView match={match} eventUnitCode={eventUnitCode} />
       </Tabs.Content>
 
       <Tabs.Content value="parsed" className="focus-visible:outline-none">

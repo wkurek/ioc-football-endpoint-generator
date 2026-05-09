@@ -9,6 +9,7 @@ import { exportSingleAsJson } from '@/domain/export/single';
 import { parseJsonInput } from '@/domain/compare/parseJsonInput';
 import { MatchSelector } from '@/ui/components/Compare/MatchSelector';
 import { ActualResponseInput } from '@/ui/components/Compare/ActualResponseInput';
+import { FetchUrlInput } from '@/ui/components/Compare/FetchUrlInput';
 import { DiffViewToggle } from '@/ui/components/Compare/DiffViewToggle';
 import { DiffViewer } from '@/ui/components/Compare/DiffViewer';
 
@@ -67,6 +68,8 @@ export function ComparePage() {
         value={selectedCode}
         onChange={setSelectedCode}
       />
+
+      <FetchUrlInput onFetched={setActualText} />
 
       <ActualResponseInput
         value={actualText}

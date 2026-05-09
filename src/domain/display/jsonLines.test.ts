@@ -75,11 +75,33 @@ describe('buildJsonLines', () => {
     expect(halfHome?.source).toBe('res');
   });
 
-  it('tags structural lines (braces) as neutral', () => {
+  it('tags root braces as neutral (competition + venue + teams = mixed)', () => {
     const lines = buildJsonLines(sample);
     expect(lines[0]?.text).toBe('{');
     expect(lines[0]?.source).toBe('neutral');
     expect(lines[lines.length - 1]?.text).toBe('}');
     expect(lines[lines.length - 1]?.source).toBe('neutral');
+  });
+
+  it('colors uniformly-sourced containers (teams/score/lineups) as their source', () => {
+    const lines = buildJsonLines(sample);
+    const teamsOpen = lines.find((l) => l.text.includes('"teams": {'));
+    const scoreOpen = lines.find((l) => l.text.includes('"score": {'));
+    const lineupsOpen = lines.find((l) => l.text.includes('"lineups": {'));
+    expect(teamsOpen?.source).toBe('res');
+    expect(scoreOpen?.source).toBe('res');
+    expect(lineupsOpen?.source).toBe('res');
+  });
+
+  it('keeps the competition container neutral (mixed const + sch children)', () => {
+    const lines = buildJsonLines(sample);
+    const compOpen = lines.find((l) => l.text.includes('"competition": {'));
+    expect(compOpen?.source).toBe('neutral');
+  });
+
+  it('colors uniformly-sourced venue container as sch', () => {
+    const lines = buildJsonLines(sample);
+    const venueOpen = lines.find((l) => l.text.includes('"venue": {'));
+    expect(venueOpen?.source).toBe('sch');
   });
 });

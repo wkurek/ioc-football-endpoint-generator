@@ -4,6 +4,8 @@ interface JsonLineRowProps {
   line: JsonLine;
   /** When false, source highlight is suppressed (plain JSON look). */
   colorize: boolean;
+  /** Source URL shown on hover; omitted for `const`/`neutral` lines. */
+  sourceUrl?: string;
 }
 
 const SOURCE_BG: Record<JsonLine['source'], string> = {
@@ -13,7 +15,12 @@ const SOURCE_BG: Record<JsonLine['source'], string> = {
   neutral: '',
 };
 
-export function JsonLineRow({ line, colorize }: JsonLineRowProps) {
+export function JsonLineRow({ line, colorize, sourceUrl }: JsonLineRowProps) {
   const bg = colorize ? SOURCE_BG[line.source] : '';
-  return <div className={`whitespace-pre px-3 ${bg}`}>{line.text || ' '}</div>;
+  const title = sourceUrl ? `Source: ${sourceUrl}` : undefined;
+  return (
+    <div className={`whitespace-pre px-3 ${bg}`} title={title}>
+      {line.text || ' '}
+    </div>
+  );
 }

@@ -1,4 +1,6 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react';
+import { useTranslation } from 'react-i18next';
+import { RefreshCw } from 'lucide-react';
 
 export type BannerKind = 'info' | 'success' | 'warn' | 'error';
 
@@ -7,6 +9,8 @@ interface BannerProps {
   /** Lucide-style icon component (uses `h-4 w-4` size). */
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   children: ReactNode;
+  /** When provided, renders a Retry button on the right side. */
+  onRetry?: () => void;
 }
 
 const KIND_CLASSES: Record<BannerKind, string> = {
@@ -18,7 +22,16 @@ const KIND_CLASSES: Record<BannerKind, string> = {
     'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-200',
 };
 
-export function Banner({ kind, icon: Icon, children }: BannerProps) {
+const RETRY_BTN_CLASSES: Record<BannerKind, string> = {
+  info: 'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800',
+  success:
+    'border-emerald-300 hover:bg-emerald-100 dark:border-emerald-700 dark:hover:bg-emerald-900/40',
+  warn: 'border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/40',
+  error: 'border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900/40',
+};
+
+export function Banner({ kind, icon: Icon, children, onRetry }: BannerProps) {
+  const { t } = useTranslation();
   const spinning = kind === 'info';
   return (
     <div
@@ -30,7 +43,17 @@ export function Banner({ kind, icon: Icon, children }: BannerProps) {
         className={`h-4 w-4 flex-shrink-0 ${spinning ? 'animate-spin' : ''}`}
         aria-hidden="true"
       />
-      <span>{children}</span>
+      <span className="flex-1">{children}</span>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className={`inline-flex flex-shrink-0 items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${RETRY_BTN_CLASSES[kind]}`}
+        >
+          <RefreshCw className="h-3 w-3" aria-hidden="true" />
+          {t('actions.retry')}
+        </button>
+      )}
     </div>
   );
 }

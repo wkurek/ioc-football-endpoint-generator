@@ -89,7 +89,8 @@
       "resHint": "Post-match facts from the official match results.",
       "const": "Constant",
       "constExamples": "competition name & season, status mapping",
-      "constHint": "Fixed values or transformations we apply (e.g. status FINISHED → FT, competition.name = \"Olympic Games\")."
+      "constHint": "Fixed values or transformations we apply (e.g. status FINISHED → FT, competition.name = \"Olympic Games\").",
+      "hoverHint": "Hover any colored line to see the exact source URL it came from."
     },
     "sections": {
       "matchInfo": "Match info",
@@ -103,8 +104,16 @@
   "compare": {
     "title": "Compare endpoint",
     "selectMatch": "Select match",
+    "searchPlaceholder": "Search by team, venue, round, date…",
+    "selected": "Selected",
+    "noResults": "No matches found.",
+    "resultsAnnouncement": "{{count}} matches found",
     "pasteActual": "Paste actual API response (JSON)",
     "pastePlaceholder": "Paste JSON here…",
+    "fetchUrl": "Or fetch from URL",
+    "fetchUrlPlaceholder": "https://api.example.com/match/...",
+    "fetch": "Fetch",
+    "fetchFailed": "Fetch failed: {{error}}",
     "runDiff": "Run diff",
     "splitView": "Split",
     "unifiedView": "Unified",

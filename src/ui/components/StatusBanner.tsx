@@ -14,8 +14,16 @@ export function StatusBanner({ state }: StatusBannerProps) {
 
   if (state.daysError) {
     return (
-      <Banner kind="error" icon={AlertTriangle}>
+      <Banner kind="error" icon={AlertTriangle} onRetry={state.retry}>
         {t('states.error')}: {state.daysError.message}
+      </Banner>
+    );
+  }
+
+  if (state.h2hError) {
+    return (
+      <Banner kind="error" icon={AlertTriangle} onRetry={state.retry}>
+        {t('states.error')}: {state.h2hError.message}
       </Banner>
     );
   }

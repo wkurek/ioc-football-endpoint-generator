@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDays } from '@/data/queries/useDays';
 import { useH2HForDates } from '@/data/queries/useH2H';
 import { useResForCodes } from '@/data/queries/useRes';
+import { queryKeys } from '@/data/queries/queryKeys';
 import { buildMatch } from '@/domain/mapping/buildMatch';
 import { buildMatchSummary, type MatchSummary } from '@/domain/matchSummary';
 import { compareMatchSummary } from '@/domain/sort/sortKey';
@@ -37,6 +39,11 @@ export interface PipelineState {
   daysError?: Error;
   h2hError?: Error;
   matchErrors: Array<{ code: string; error: Error }>;
+  /**
+   * Re-runs the entire SCH→H2H→RES pipeline by invalidating all cached
+   * queries. Used by the Retry button on error banners.
+   */
+  retry: () => void;
 }
 
 interface PipelineOptions {
@@ -48,6 +55,7 @@ interface PipelineOptions {
  */
 export function usePipeline(options: PipelineOptions = {}): PipelineState {
   const enabled = options.enabled ?? false;
+  const queryClient = useQueryClient();
 
   const daysQuery = useDays({ enabled });
   const dates: readonly string[] = daysQuery.data ?? [];
@@ -96,6 +104,10 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     else if (allSchedules.length > 0) phase = 'ready';
   }
 
+  const retry = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.all });
+  }, [queryClient]);
+
   return {
     phase,
     entries,
@@ -109,5 +121,6 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     daysError: daysQuery.error ?? undefined,
     h2hError: h2h.errors[0],
     matchErrors,
+    retry,
   };
 }
