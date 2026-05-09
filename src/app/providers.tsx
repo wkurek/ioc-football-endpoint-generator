@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { ThemeContext, type Theme, resolveTheme, applyThemeClass } from '@/ui/hooks/useTheme';
 
 const queryClient = new QueryClient({
@@ -39,7 +40,9 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+      <ThemeContext.Provider value={{ theme, setTheme }}>
+        <Tooltip.Provider delayDuration={150}>{children}</Tooltip.Provider>
+      </ThemeContext.Provider>
     </QueryClientProvider>
   );
 }

@@ -80,10 +80,16 @@
       "parsed": "Parsed"
     },
     "legend": {
-      "title": "Source",
-      "sch": "from SCH endpoint",
-      "res": "from RES endpoint",
-      "const": "constant / mapping"
+      "title": "Source highlighting",
+      "sch": "Schedule",
+      "schExamples": "round, kickoff, venue",
+      "schHint": "Pre-match information from the official tournament schedule.",
+      "res": "Results",
+      "resExamples": "teams, score, scorers, lineups",
+      "resHint": "Post-match facts from the official match results.",
+      "const": "Constant",
+      "constExamples": "competition name & season, status mapping",
+      "constHint": "Fixed values or transformations we apply (e.g. status FINISHED → FT, competition.name = \"Olympic Games\")."
     },
     "sections": {
       "matchInfo": "Match info",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Download, Play } from 'lucide-react';
 import { useMatchesState } from '@/ui/state/MatchesStateProvider';
 import { useDownload } from '@/ui/hooks/useDownload';
+import { useFilterUrlSync } from '@/ui/hooks/useFilterUrlSync';
 import { exportSingleAsJson } from '@/domain/export/single';
 import { exportBulkAsJson, type MatchEntry as BulkEntry } from '@/domain/export/bulk';
 import {
@@ -33,6 +34,7 @@ export function MatchesPage() {
     setSorting,
   } = useMatchesState();
   const download = useDownload();
+  useFilterUrlSync(criteria, setCriteria);
 
   const filtered = useMemo(
     () => filterMatches(pipeline.entries.map((e) => e.summary), criteria),
