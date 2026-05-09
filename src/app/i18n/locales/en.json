@@ -19,7 +19,12 @@
     "backToMatches": "Back to matches",
     "retry": "Retry",
     "clearFilters": "Clear filters",
-    "compare": "Compare"
+    "compare": "Compare",
+    "compareThisMatch": "Compare this match",
+    "copyAll": "Copy JSON",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Copy failed: {{error}}",
+    "colorizeSource": "Highlight source"
   },
   "table": {
     "columns": {

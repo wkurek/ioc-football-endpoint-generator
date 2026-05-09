@@ -4,6 +4,7 @@ import { Providers } from '@/app/providers';
 import { AppLayout } from '@/ui/layout/AppLayout';
 import { PageFallback } from '@/ui/components/PageFallback';
 import { MatchesStateProvider } from '@/ui/state/MatchesStateProvider';
+import { ToastProvider } from '@/ui/state/ToastProvider';
 
 const MatchesPage = lazy(() =>
   import('@/ui/pages/MatchesPage').then((m) => ({ default: m.MatchesPage })),
@@ -23,17 +24,19 @@ export function App() {
     <Providers>
       <BrowserRouter>
         <MatchesStateProvider>
-          <AppLayout>
-            <Suspense fallback={<PageFallback />}>
-              <Routes>
-                <Route path="/" element={<MatchesPage />} />
-                <Route path="/match/:eventUnitCode" element={<MatchDetailPage />} />
-                <Route path="/compare" element={<ComparePage />} />
-                <Route path="/compare/:eventUnitCode" element={<ComparePage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Suspense>
-          </AppLayout>
+          <ToastProvider>
+            <AppLayout>
+              <Suspense fallback={<PageFallback />}>
+                <Routes>
+                  <Route path="/" element={<MatchesPage />} />
+                  <Route path="/match/:eventUnitCode" element={<MatchDetailPage />} />
+                  <Route path="/compare" element={<ComparePage />} />
+                  <Route path="/compare/:eventUnitCode" element={<ComparePage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </AppLayout>
+          </ToastProvider>
         </MatchesStateProvider>
       </BrowserRouter>
     </Providers>

@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { ChevronRight, Download } from 'lucide-react';
+import { ChevronRight, Download, GitCompare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TFunction } from 'i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
@@ -119,6 +119,16 @@ export function buildColumns({
             <Download className="h-4 w-4" aria-hidden="true" />
           </button>
           <Link
+            to={`/compare/${encodeURIComponent(row.original.code)}`}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={t('actions.compareThisMatch')}
+            title={t('actions.compareThisMatch')}
+            className="rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 aria-disabled:pointer-events-none aria-disabled:opacity-40 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            aria-disabled={!row.original.match}
+          >
+            <GitCompare className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <Link
             to={`/match/${encodeURIComponent(row.original.code)}`}
             onClick={(e) => e.stopPropagation()}
             aria-label={t('actions.viewDetails')}
@@ -130,7 +140,7 @@ export function buildColumns({
         </div>
       ),
       enableSorting: false,
-      size: 80,
+      size: 110,
     },
   ];
 }

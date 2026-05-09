@@ -1,4 +1,4 @@
-import { ChevronRight, Download } from 'lucide-react';
+import { ChevronRight, Download, GitCompare } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
@@ -66,6 +66,16 @@ export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardPr
             >
               <Download className="h-4 w-4" aria-hidden="true" />
             </button>
+            <Link
+              to={`/compare/${encodeURIComponent(entry.code)}`}
+              onClick={(e) => e.stopPropagation()}
+              aria-label={t('actions.compareThisMatch')}
+              title={t('actions.compareThisMatch')}
+              aria-disabled={!entry.match}
+              className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 aria-disabled:pointer-events-none aria-disabled:opacity-40 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <GitCompare className="h-4 w-4" aria-hidden="true" />
+            </Link>
             <Link
               to={`/match/${encodeURIComponent(entry.code)}`}
               onClick={(e) => e.stopPropagation()}
