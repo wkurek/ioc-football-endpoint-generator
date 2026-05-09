@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:olympics.com)",
+      "Bash(curl -sS -o /tmp/stacy.html -w \"status:          %{http_code}\\\\nsize_download:   %{size_download}\\\\ncontent-type:    %{content_type}\\\\nredirect:        %{redirect_url}\\\\n\" -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0 Safari/537.36\" -H \"Accept: text/html,application/xhtml+xml\" -H \"Accept-Language: en-US,en;q=0.9\" \"https://stacy.olympics.com/en/paris-2024/competition-schedule\" --max-time 30 -L)",
+      "Bash(curl -sS -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0 Safari/537.36\" \"https://stacy.olympics.com/OG2024/static/js/main.1c84d9f0.js\" --max-time 60 -o /tmp/stacy-main.js -w \"status:        %{http_code}\\\\nsize:          %{size_download}\\\\n\")",
+      "Bash(python3 -c 'import json,sys; d=json.load\\(open\\('\\\\''/tmp/fbl-events.json'\\\\''\\)\\); print\\('\\\\''TOP KEYS:'\\\\'', list\\(d.keys\\(\\)\\) if isinstance\\(d,dict\\) else type\\(d\\).__name__\\); *)",
+      "Bash(cp /tmp/fbl-events.json \"c:/Projects/ioc/.tmp-fbl-events.json\")",
+      "Bash(mkdir -p \"c:/Projects/ioc/.tmp-data/h2h\" \"c:/Projects/ioc/.tmp-data/res\" *)",
+      "Bash(node \"c:/Projects/ioc/.tmp-data/analyze-h2h.mjs\")",
+      "Bash(node \"c:/Projects/ioc/.tmp-data/analyze-positions.mjs\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp",
+      "\\tmp\\sch\\h2h"
+    ]
+  }
+}

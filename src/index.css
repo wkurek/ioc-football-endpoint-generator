@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/*
+ * react-day-picker v9 — theme integration.
+ *
+ * Strategy: high-specificity concrete selectors (`.rdp-root .rdp-range_*`)
+ * instead of CSS variable overrides. This guarantees our styling beats v9's
+ * defaults regardless of stylesheet load order or future v9 internal changes.
+ */
+.rdp-root {
+  --rdp-accent-color: rgb(37 99 235); /* blue-600 */
+  --rdp-disabled-opacity: 0.3;
+}
+.dark .rdp-root {
+  --rdp-accent-color: rgb(59 130 246); /* blue-500 */
+  color: rgb(241 245 249);
+}
+
+/* Range boundaries (start, end) and single-day selection — solid blue, white text */
+.rdp-root .rdp-range_start .rdp-day_button,
+.rdp-root .rdp-range_end .rdp-day_button,
+.rdp-root .rdp-selected .rdp-day_button {
+  background-color: rgb(37 99 235); /* blue-600 */
+  color: white;
+  border-color: rgb(37 99 235);
+  font-weight: 600;
+}
+.dark .rdp-root .rdp-range_start .rdp-day_button,
+.dark .rdp-root .rdp-range_end .rdp-day_button,
+.dark .rdp-root .rdp-selected .rdp-day_button {
+  background-color: rgb(59 130 246); /* blue-500 */
+  border-color: rgb(59 130 246);
+}
+
+/* Range middle — soft blue background, dark text, no border-radius (continuous look) */
+.rdp-root .rdp-range_middle .rdp-day_button {
+  background-color: rgb(219 234 254); /* blue-100 */
+  color: rgb(15 23 42); /* slate-900 */
+  border: none;
+  border-radius: 0;
+  font-weight: 500;
+}
+.dark .rdp-root .rdp-range_middle .rdp-day_button {
+  background-color: rgb(30 58 138); /* blue-900 */
+  color: rgb(241 245 249); /* slate-100 */
+}
+
+/* Also color the cell behind range_middle for the connecting band visual */
+.rdp-root .rdp-range_middle {
+  background-color: rgb(219 234 254);
+}
+.dark .rdp-root .rdp-range_middle {
+  background-color: rgb(30 58 138);
+}
+
+/* Hover on regular (non-selected, non-disabled) days */
+.rdp-root .rdp-day_button:not(:disabled):not(.rdp-selected):hover {
+  background-color: rgb(241 245 249); /* slate-100 */
+}
+.dark .rdp-root .rdp-day_button:not(:disabled):not(.rdp-selected):hover {
+  background-color: rgb(51 65 85); /* slate-700 */
+}

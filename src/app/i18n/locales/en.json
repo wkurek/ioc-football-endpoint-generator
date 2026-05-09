@@ -1,0 +1,117 @@
+{
+  "app": {
+    "title": "OG2024 Football Endpoint Generator",
+    "subtitle": "Paris 2024 expected API responses for FootyScores tests"
+  },
+  "nav": {
+    "matches": "Matches",
+    "compare": "Compare"
+  },
+  "actions": {
+    "loadMatches": "Load matches",
+    "generateAll": "Generate all endpoints",
+    "downloadAll": "Download all",
+    "downloadSelected": "Download selected ({{count}})",
+    "downloadSingle": "Download this match",
+    "addToSelection": "Add to selection",
+    "viewDetails": "View details",
+    "back": "Back",
+    "backToMatches": "Back to matches",
+    "retry": "Retry",
+    "clearFilters": "Clear filters",
+    "compare": "Compare"
+  },
+  "table": {
+    "columns": {
+      "select": "Select",
+      "kickoff": "Kickoff",
+      "round": "Round",
+      "home": "Home",
+      "score": "Score",
+      "away": "Away",
+      "venue": "Venue",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "empty": "No matches loaded yet.",
+    "emptyFiltered": "No matches match the current filters.",
+    "summary": "{{filtered}} of {{total}} matches"
+  },
+  "filters": {
+    "tournament": {
+      "label": "Tournament",
+      "all": "All",
+      "men": "Men's",
+      "women": "Women's"
+    },
+    "round": {
+      "label": "Round",
+      "placeholder": "All rounds"
+    },
+    "dateRange": {
+      "label": "Date range",
+      "from": "From",
+      "to": "To",
+      "allDates": "All dates"
+    },
+    "search": {
+      "label": "Team search",
+      "placeholder": "Type team name…"
+    }
+  },
+  "states": {
+    "loading": "Loading…",
+    "loadingDays": "Loading match dates…",
+    "loadingH2H": "Loading matches ({{loaded}}/{{total}})",
+    "loadingRes": "Generating endpoints ({{loaded}}/{{total}})",
+    "ready": "Ready",
+    "error": "Something went wrong",
+    "errorRetry": "Retry",
+    "empty": "No data yet"
+  },
+  "match": {
+    "tabs": {
+      "generated": "Generated",
+      "parsed": "Parsed"
+    },
+    "legend": {
+      "title": "Source",
+      "sch": "from SCH endpoint",
+      "res": "from RES endpoint",
+      "const": "constant / mapping"
+    },
+    "sections": {
+      "matchInfo": "Match info",
+      "score": "Score",
+      "lineups": "Lineups",
+      "goalsTimeline": "Goals timeline",
+      "starting": "Starting XI",
+      "bench": "Bench"
+    }
+  },
+  "compare": {
+    "title": "Compare endpoint",
+    "selectMatch": "Select match",
+    "pasteActual": "Paste actual API response (JSON)",
+    "pastePlaceholder": "Paste JSON here…",
+    "runDiff": "Run diff",
+    "splitView": "Split",
+    "unifiedView": "Unified",
+    "identical": "✓ Identical — no differences",
+    "summary": "+{{added}} −{{removed}}, {{unchanged}} unchanged",
+    "invalidJson": "Invalid JSON: {{error}}"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "footer": {
+    "source": "Source: stacy.olympics.com",
+    "github": "GitHub"
+  }
+}
