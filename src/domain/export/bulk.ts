@@ -1,5 +1,6 @@
 import type { Match } from '@/domain/types';
 import { TranslatableError } from '@/domain/errors';
+import { canonicalizeMatch } from './single';
 
 /**
  * One pair = one match in the bulk export. The `code` carries `eventUnit.code`,
@@ -10,31 +11,69 @@ export interface MatchEntry {
   match: Match;
 }
 
+/** Schema version for the bulk wrapper. Bumps when `__metadata__` shape changes. */
+export const BULK_SCHEMA_VERSION = '1.0.0';
+
+const DEFAULT_SOURCE_URL =
+  'https://stacy.olympics.com/en/paris-2024/competition-schedule';
+
+export interface BulkExportMetadata {
+  generatedAt: string;
+  schemaVersion: string;
+  source: { url: string };
+  count: number;
+}
+
+export interface BulkExportOptions {
+  /** ISO timestamp for the export. Defaults to `new Date().toISOString()` at call time. */
+  generatedAt?: string;
+  /** Source-of-truth URL recorded in `__metadata__.source.url`. */
+  sourceUrl?: string;
+}
+
 /**
- * Serialize a list of matches as a map keyed by `eventUnit.code`
- * (CONVENTIONS.md #14 — option B).
+ * Serialize a list of matches as a map keyed by `eventUnit.code`, plus a
+ * `__metadata__` wrapper at the root with provenance info.
  *
  * Output shape:
  * ```json
  * {
- *   "FBLM…GPA-000100--": { ...match shape from example.json },
- *   "FBLM…GPA-000200--": { ...match shape },
+ *   "__metadata__": {
+ *     "generatedAt": "2026-05-10T12:34:56.000Z",
+ *     "schemaVersion": "1.0.0",
+ *     "source": { "url": "https://stacy.olympics.com/..." },
+ *     "count": 58
+ *   },
+ *   "FBLM…GPA-000100--": { ...example.json shape },
+ *   "FBLM…GPA-000200--": { ...example.json shape },
  *   ...
  * }
  * ```
  *
- * Insertion order of keys follows the input array (deterministic per
- * CONVENTIONS.md #15 — caller is expected to pass entries in sort order).
+ * Single-match export (`exportSingleAsJson`) intentionally does NOT add metadata
+ * — it must remain byte-perfect against `example.json` so the file can be used
+ * directly as a QA "expected" reference.
  *
- * Throws on duplicate codes (defensive — would silently overwrite otherwise).
+ * Insertion order: `__metadata__` first, then matches in caller-provided order
+ * (which is sort order — CONVENTIONS.md §9). Throws on duplicate codes.
  */
-export function exportBulkAsJson(entries: readonly MatchEntry[]): string {
-  const map: Record<string, Match> = {};
+export function exportBulkAsJson(
+  entries: readonly MatchEntry[],
+  options: BulkExportOptions = {},
+): string {
+  const metadata: BulkExportMetadata = {
+    generatedAt: options.generatedAt ?? new Date().toISOString(),
+    schemaVersion: BULK_SCHEMA_VERSION,
+    source: { url: options.sourceUrl ?? DEFAULT_SOURCE_URL },
+    count: entries.length,
+  };
+
+  const out: Record<string, BulkExportMetadata | Match> = { __metadata__: metadata };
   for (const entry of entries) {
-    if (entry.code in map) {
+    if (entry.code in out) {
       throw new TranslatableError('errors.export.duplicateCode', { code: entry.code });
     }
-    map[entry.code] = entry.match;
+    out[entry.code] = canonicalizeMatch(entry.match);
   }
-  return JSON.stringify(map, null, 2);
+  return JSON.stringify(out, null, 2);
 }

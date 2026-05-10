@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportSingleAsJson } from './single';
-import { exportBulkAsJson } from './bulk';
+import { exportBulkAsJson, BULK_SCHEMA_VERSION } from './bulk';
 import type { Match } from '@/domain/types';
 
 const fakeMatch = (override: Partial<Match> = {}): Match => ({
@@ -18,13 +18,15 @@ const fakeMatch = (override: Partial<Match> = {}): Match => ({
   ...override,
 });
 
+const FIXED_TS = '2026-05-10T12:00:00.000Z';
+
 describe('exportSingleAsJson', () => {
   it('emits the match in pure example.json shape (no wrapper)', () => {
     const json = exportSingleAsJson(fakeMatch());
     const parsed = JSON.parse(json) as Match;
     expect(parsed.competition.name).toBe('Olympic Games');
     expect(parsed.score.home).toBe(1);
-    // No extra top-level keys (id, etc.)
+    // No extra top-level keys (id, __metadata__, etc.)
     expect(Object.keys(parsed).sort()).toEqual([
       'competition',
       'kickoff',
@@ -34,6 +36,21 @@ describe('exportSingleAsJson', () => {
       'status',
       'teams',
       'venue',
+    ]);
+  });
+
+  it('emits keys in canonical example.json order (NOT alphabetical)', () => {
+    const json = exportSingleAsJson(fakeMatch());
+    const parsed = JSON.parse(json) as Match;
+    expect(Object.keys(parsed)).toEqual([
+      'competition',
+      'venue',
+      'kickoff',
+      'status',
+      'teams',
+      'score',
+      'scorers',
+      'lineups',
     ]);
   });
 
@@ -47,35 +64,59 @@ describe('exportSingleAsJson', () => {
     const b = exportSingleAsJson(fakeMatch());
     expect(a).toBe(b);
   });
+
+  it('is independent of the input object literal key order', () => {
+    // If we shuffle the input keys, the output should still be byte-identical
+    // to the canonical form.
+    const canonical = fakeMatch();
+    const shuffled: Match = {
+      lineups: canonical.lineups,
+      scorers: canonical.scorers,
+      score: canonical.score,
+      teams: canonical.teams,
+      status: canonical.status,
+      kickoff: canonical.kickoff,
+      venue: canonical.venue,
+      competition: canonical.competition,
+    };
+    expect(exportSingleAsJson(shuffled)).toBe(exportSingleAsJson(canonical));
+  });
 });
 
 describe('exportBulkAsJson', () => {
   const codeA = 'FBLMTEAM11------------GPA-000100--';
   const codeB = 'FBLMTEAM11------------GPA-000200--';
 
-  it('produces a map keyed by eventUnit.code', () => {
-    const json = exportBulkAsJson([
-      { code: codeA, match: fakeMatch({ teams: { home: 'X', away: 'Y' } }) },
-      { code: codeB, match: fakeMatch({ teams: { home: 'P', away: 'Q' } }) },
-    ]);
-    const parsed = JSON.parse(json) as Record<string, Match>;
-    expect(Object.keys(parsed)).toEqual([codeA, codeB]);
-    expect(parsed[codeA]?.teams).toEqual({ home: 'X', away: 'Y' });
-    expect(parsed[codeB]?.teams).toEqual({ home: 'P', away: 'Q' });
+  it('produces a map keyed by eventUnit.code, with __metadata__ first', () => {
+    const json = exportBulkAsJson(
+      [
+        { code: codeA, match: fakeMatch({ teams: { home: 'X', away: 'Y' } }) },
+        { code: codeB, match: fakeMatch({ teams: { home: 'P', away: 'Q' } }) },
+      ],
+      { generatedAt: FIXED_TS },
+    );
+    const parsed = JSON.parse(json) as Record<string, unknown>;
+    expect(Object.keys(parsed)).toEqual(['__metadata__', codeA, codeB]);
+    expect((parsed[codeA] as Match).teams).toEqual({ home: 'X', away: 'Y' });
+    expect((parsed[codeB] as Match).teams).toEqual({ home: 'P', away: 'Q' });
   });
 
-  it('preserves insertion order (deterministic)', () => {
-    // Reverse order should yield reverse keys.
-    const json = exportBulkAsJson([
-      { code: codeB, match: fakeMatch() },
-      { code: codeA, match: fakeMatch() },
-    ]);
-    const parsed = JSON.parse(json) as Record<string, Match>;
-    expect(Object.keys(parsed)).toEqual([codeB, codeA]);
+  it('preserves match insertion order (deterministic) after __metadata__', () => {
+    const json = exportBulkAsJson(
+      [
+        { code: codeB, match: fakeMatch() },
+        { code: codeA, match: fakeMatch() },
+      ],
+      { generatedAt: FIXED_TS },
+    );
+    const parsed = JSON.parse(json) as Record<string, unknown>;
+    expect(Object.keys(parsed)).toEqual(['__metadata__', codeB, codeA]);
   });
 
-  it('values are pure example.json shape (no extra id key inside)', () => {
-    const json = exportBulkAsJson([{ code: codeA, match: fakeMatch() }]);
+  it('match values stay in pure example.json shape (no metadata leaks in)', () => {
+    const json = exportBulkAsJson([{ code: codeA, match: fakeMatch() }], {
+      generatedAt: FIXED_TS,
+    });
     const parsed = JSON.parse(json) as Record<string, Match>;
     const entry = parsed[codeA];
     expect(entry).toBeDefined();
@@ -91,16 +132,52 @@ describe('exportBulkAsJson', () => {
     ]);
   });
 
+  it('__metadata__ has generatedAt, schemaVersion, source.url, count', () => {
+    const json = exportBulkAsJson(
+      [
+        { code: codeA, match: fakeMatch() },
+        { code: codeB, match: fakeMatch() },
+      ],
+      {
+        generatedAt: FIXED_TS,
+        sourceUrl: 'https://example.test/source',
+      },
+    );
+    const parsed = JSON.parse(json) as { __metadata__: unknown };
+    expect(parsed.__metadata__).toEqual({
+      generatedAt: FIXED_TS,
+      schemaVersion: BULK_SCHEMA_VERSION,
+      source: { url: 'https://example.test/source' },
+      count: 2,
+    });
+  });
+
   it('throws on duplicate codes', () => {
     expect(() =>
-      exportBulkAsJson([
-        { code: codeA, match: fakeMatch() },
-        { code: codeA, match: fakeMatch() },
-      ]),
+      exportBulkAsJson(
+        [
+          { code: codeA, match: fakeMatch() },
+          { code: codeA, match: fakeMatch() },
+        ],
+        { generatedAt: FIXED_TS },
+      ),
     ).toThrow(/duplicate/);
   });
 
-  it('handles an empty list — emits "{}"', () => {
-    expect(exportBulkAsJson([])).toBe('{}');
+  it('handles an empty list — emits __metadata__ with count: 0', () => {
+    const json = exportBulkAsJson([], { generatedAt: FIXED_TS });
+    const parsed = JSON.parse(json) as { __metadata__: { count: number } };
+    expect(Object.keys(parsed)).toEqual(['__metadata__']);
+    expect(parsed.__metadata__.count).toBe(0);
+  });
+
+  it('defaults generatedAt to a fresh ISO timestamp when not provided', () => {
+    const before = Date.now();
+    const json = exportBulkAsJson([{ code: codeA, match: fakeMatch() }]);
+    const after = Date.now();
+    const parsed = JSON.parse(json) as { __metadata__: { generatedAt: string } };
+    const ts = Date.parse(parsed.__metadata__.generatedAt);
+    expect(ts).toBeGreaterThanOrEqual(before);
+    expect(ts).toBeLessThanOrEqual(after);
   });
 });

@@ -33,11 +33,12 @@ The app is a 100% static client-side SPA — no backend, no proxy, no API keys. 
 
 UI highlights:
 - Sortable / filterable table with checkbox-based multi-select; mobile fallback to card layout.
-- Filters: tournament (Men's / Women's), round (Group / QF / SF / Bronze / Final), date range with a calendar popup, free-text team search.
+- Filters: tournament (Men's / Women's), round (Group / QF / SF / Bronze / Final), date range with a calendar popup, free-text team search. Filter state syncs to URL search params (refresh-safe, shareable).
+- "Load matches" gate persists in `sessionStorage` — once you click it, the pipeline stays loaded across navigation and in-tab refresh until you close the tab.
 - Dedicated match detail page (`/match/:eventUnitCode`) with two tabs:
   - **Generated** — pretty-printed JSON, optional source highlighting (which line came from which API endpoint).
   - **Parsed** — DOM cards: match info, score table, goals timeline, lineups per team.
-- **Compare** page (`/compare/:eventUnitCode?`) — paste an "actual" JSON response, get a Git-style diff (split / unified, word-level highlights, collapsed unchanged regions) against our generated expected.
+- **Compare** page (`/compare/:eventUnitCode?`) — paste an "actual" JSON response (or fetch one from a URL), get a Git-style diff (split / unified, word-level highlights, collapsed unchanged regions) against our generated expected.
 - Light + dark theme toggle, full keyboard navigation, screen-reader friendly (Radix primitives + ARIA), responsive down to ~360px.
 - i18n-ready (currently English; adding a new language = one new JSON file).
 
@@ -100,8 +101,27 @@ This order is preserved in:
 - The default table view (re-sortable interactively, but resets to default per session).
 - The bulk export (`Download all` and `Download selected`) — JSON map keys preserve insertion order in modern JS engines, and we insert in the sort order.
 - The local match-number-in-phase derivation: e.g. "Men's Quarter-final 1" goes to whichever QF kicked off first chronologically, not the one with the lowest internal Atos code.
+- The single-match export, where keys are written in `example.json`'s canonical order via an explicit canonicalizer (not via insertion order of the in-memory `Match` object) — output is byte-stable even if the TypeScript interface ever gets reordered.
 
-Same input → same output, every run.
+Same input → same output, every run (excluding the bulk wrapper's `generatedAt` timestamp — see below).
+
+### Output shapes
+
+- **Single match (`<eventUnit.code>.json`)** — byte-perfect `example.json` shape. No wrapper, no `__metadata__`, no extra keys. This is the file QA wires directly into "expected" assertions.
+- **Bulk (`og2024-fbl-all.json`, `og2024-fbl-selected-N.json`)** — a map keyed by `eventUnit.code`, with a `__metadata__` object at the root recording provenance:
+  ```json
+  {
+    "__metadata__": {
+      "generatedAt": "2026-05-10T12:34:56.000Z",
+      "schemaVersion": "1.0.0",
+      "source": { "url": "https://stacy.olympics.com/en/paris-2024/competition-schedule" },
+      "count": 58
+    },
+    "FBLM…GPA-000100--": { ...example.json shape },
+    ...
+  }
+  ```
+  The key `__metadata__` uses double-underscore so it can't collide with an Atos `eventUnit.code` (which always starts with `FBL`). The metadata is **bulk-only** by design — single-match files stay free of any wrapper.
 
 ---
 
@@ -198,7 +218,7 @@ Initial bundle (gzipped):
 npm run test:run
 ```
 
-- **161 tests** across **18 files**.
+- **229 tests** across **20 files**.
 - Pure-function coverage for every mapper, exporter, filter, sorter (~100% on `src/domain/`).
 - Integration smoke test: `buildMatch` runs end-to-end on **all 58 Paris 2024 matches** using cached fixtures (`test/fixtures/res-all/`). Catches regressions across the full corpus, not just the 6 representative samples.
 
@@ -206,9 +226,9 @@ npm run test:run
 
 ## Known limitations & future work
 
-- **Bonus comparison view** is implemented as a "paste actual JSON" flow with Git-style diff. A real automated comparison would require fetching from a live FootyScores API (which doesn't exist in this assignment); the diff component is reusable in such a setup.
-- **URL state for filters** (sharable deep-links to a pre-filtered table) is not yet implemented — filter state lives in React context for navigation persistence within a session.
+- **Bonus comparison view** is implemented as a per-match flow on `/compare` — paste an "actual" JSON or fetch it from a URL, get a Git-style diff against our generated expected. Batch comparison ("run all 58 against a live API and report pass/fail") is a future iteration; FootyScores isn't a real API, so there's no batch endpoint to point at today.
 - **End-to-end tests** (Playwright happy path) are out of MVP scope.
+- **Player position output is a 4-value subset** of `example.json`'s 11 codes (CONVENTIONS.md §3). RB/LB/DM/AM/LW/RW/ST will never appear in the output — see CONVENTIONS.md for why granular Atos codes aren't deterministically mappable.
 
 ---
 
