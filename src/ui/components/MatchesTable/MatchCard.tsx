@@ -46,10 +46,7 @@ export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardPr
           </div>
           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{s.round}</div>
           <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            {date} · {time} ·{' '}
-            <span className="inline-flex items-center rounded bg-slate-100 px-1.5 text-[10px] dark:bg-slate-800">
-              {s.status}
-            </span>
+            {date} · {time}
           </div>
           <div className="truncate text-xs text-slate-500 dark:text-slate-400">{s.venue}</div>
 

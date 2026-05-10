@@ -29,6 +29,7 @@
   "table": {
     "columns": {
       "select": "Select",
+      "selectAll": "Toggle selection of all visible matches",
       "kickoff": "Kickoff",
       "round": "Round",
       "home": "Home",

@@ -72,14 +72,14 @@ export function MatchesPage() {
   };
 
   const handleDownloadSelected = () => {
-    const selectedEntries = pipeline.entries.filter((e) => selection.has(e.code));
+    const selectedEntries = filteredEntries.filter((e) => selection.has(e.code));
     const bulk = buildBulkEntries(selectedEntries);
     download(filenameBulkSelected(bulk.length), exportBulkAsJson(bulk));
   };
 
   const isReady = pipeline.phase === PipelinePhase.READY;
   const allDownloadable = pipeline.entries.filter((e) => !!e.match).length;
-  const selectedDownloadable = pipeline.entries.filter(
+  const selectedDownloadable = filteredEntries.filter(
     (e) => selection.has(e.code) && !!e.match,
   ).length;
 
@@ -149,6 +149,8 @@ export function MatchesPage() {
                       entries={filteredEntries}
                       selected={selection.selected}
                       onToggle={selection.toggle}
+                      onSelectMany={selection.addMany}
+                      onDeselectMany={selection.removeMany}
                       onDownloadSingle={handleDownloadSingle}
                       sorting={sorting}
                       onSortingChange={setSorting}

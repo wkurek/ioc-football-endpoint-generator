@@ -5,12 +5,17 @@ import type { TFunction } from 'i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
 import { routes } from '@/ui/routes';
 import { KickoffCell } from './KickoffCell';
+import { SelectAllCheckbox } from './SelectAllCheckbox';
 
 export interface ColumnFactoryArgs {
   t: TFunction;
   selected: ReadonlySet<string>;
   onToggle: (code: string) => void;
   onDownloadSingle: (entry: MatchEntry) => void;
+  /** Codes of currently rendered (filtered) rows — drives the header checkbox state. */
+  visibleCodes: readonly string[];
+  onSelectMany: (codes: readonly string[]) => void;
+  onDeselectMany: (codes: readonly string[]) => void;
 }
 
 export function buildColumns({
@@ -18,11 +23,22 @@ export function buildColumns({
   selected,
   onToggle,
   onDownloadSingle,
+  visibleCodes,
+  onSelectMany,
+  onDeselectMany,
 }: ColumnFactoryArgs): ColumnDef<MatchEntry>[] {
   return [
     {
       id: 'select',
-      header: () => <span className="sr-only">{t('table.columns.select')}</span>,
+      header: () => (
+        <SelectAllCheckbox
+          visibleCodes={visibleCodes}
+          selected={selected}
+          onSelectMany={onSelectMany}
+          onDeselectMany={onDeselectMany}
+          ariaLabel={t('table.columns.selectAll')}
+        />
+      ),
       cell: ({ row }) => {
         const code = row.original.code;
         const isSelected = selected.has(code);
@@ -88,16 +104,6 @@ export function buildColumns({
       cell: ({ row }) => (
         <span className="truncate text-slate-600 dark:text-slate-400">
           {row.original.summary.venue}
-        </span>
-      ),
-    },
-    {
-      id: 'status',
-      accessorFn: (row) => row.summary.status,
-      header: t('table.columns.status'),
-      cell: ({ row }) => (
-        <span className="inline-flex items-center rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          {row.original.summary.status}
         </span>
       ),
     },

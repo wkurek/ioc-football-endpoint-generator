@@ -17,6 +17,8 @@ interface MatchesTableProps {
   entries: MatchEntry[];
   selected: ReadonlySet<string>;
   onToggle: (code: string) => void;
+  onSelectMany: (codes: readonly string[]) => void;
+  onDeselectMany: (codes: readonly string[]) => void;
   onDownloadSingle: (entry: MatchEntry) => void;
   sorting: SortingState;
   onSortingChange: (s: SortingState) => void;
@@ -26,6 +28,8 @@ export function MatchesTable({
   entries,
   selected,
   onToggle,
+  onSelectMany,
+  onDeselectMany,
   onDownloadSingle,
   sorting,
   onSortingChange,
@@ -33,9 +37,20 @@ export function MatchesTable({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const visibleCodes = useMemo(() => entries.map((e) => e.code), [entries]);
+
   const columns = useMemo(
-    () => buildColumns({ t, selected, onToggle, onDownloadSingle }),
-    [t, selected, onToggle, onDownloadSingle],
+    () =>
+      buildColumns({
+        t,
+        selected,
+        onToggle,
+        onDownloadSingle,
+        visibleCodes,
+        onSelectMany,
+        onDeselectMany,
+      }),
+    [t, selected, onToggle, onDownloadSingle, visibleCodes, onSelectMany, onDeselectMany],
   );
 
   const table = useReactTable({
@@ -54,7 +69,7 @@ export function MatchesTable({
   return (
     <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-800">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-600 dark:bg-slate-900 dark:text-slate-400">
+        <thead className="bg-slate-50 text-left text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
