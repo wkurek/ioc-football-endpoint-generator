@@ -1,4 +1,5 @@
-import type { Position } from '@/domain/types';
+import { Position } from '@/domain/types';
+import { BroadPosition } from '@/data/api/codes';
 
 /**
  * Maps OG2024's broad 4-letter position code to example.json's enum
@@ -18,14 +19,14 @@ import type { Position } from '@/domain/types';
  */
 export function mapPosition(broad: string): Position {
   switch (broad) {
-    case 'GK':
-      return 'GK';
-    case 'DF':
-      return 'CB';
-    case 'MF':
-      return 'CM';
-    case 'FW':
-      return 'FW';
+    case BroadPosition.GK:
+      return Position.GK;
+    case BroadPosition.DF:
+      return Position.CB;
+    case BroadPosition.MF:
+      return Position.CM;
+    case BroadPosition.FW:
+      return Position.FW;
     default:
       throw new Error(`mapPosition: unknown broad position code "${broad}"`);
   }

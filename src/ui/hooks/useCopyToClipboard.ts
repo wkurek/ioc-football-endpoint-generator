@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/ui/state/ToastProvider';
+import { ToastKind } from '@/ui/types';
 
 /**
  * Copies a string to the OS clipboard and announces the result via toast.
@@ -14,9 +15,12 @@ export function useCopyToClipboard() {
     async (text: string, successMessage?: string) => {
       try {
         await navigator.clipboard.writeText(text);
-        show(successMessage ?? t('actions.copied'), 'success');
+        show(successMessage ?? t('actions.copied'), ToastKind.SUCCESS);
       } catch (e) {
-        show(t('actions.copyFailed', { error: e instanceof Error ? e.message : 'unknown' }), 'error');
+        show(
+          t('actions.copyFailed', { error: e instanceof Error ? e.message : 'unknown' }),
+          ToastKind.ERROR,
+        );
       }
     },
     [show, t],

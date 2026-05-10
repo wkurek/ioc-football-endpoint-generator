@@ -1,7 +1,8 @@
 import { CheckCircle2, Info, XCircle } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
+import { ToastKind } from '@/ui/types';
 
-export type ToastKind = 'success' | 'error' | 'info';
+export { ToastKind } from '@/ui/types';
 
 interface ToastProps {
   message: string;
@@ -9,17 +10,18 @@ interface ToastProps {
 }
 
 const ICONS: Record<ToastKind, ComponentType<SVGProps<SVGSVGElement>>> = {
-  success: CheckCircle2,
-  error: XCircle,
-  info: Info,
+  [ToastKind.SUCCESS]: CheckCircle2,
+  [ToastKind.ERROR]: XCircle,
+  [ToastKind.INFO]: Info,
 };
 
 const STYLES: Record<ToastKind, string> = {
-  success:
+  [ToastKind.SUCCESS]:
     'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-100 dark:border-emerald-800',
-  error:
+  [ToastKind.ERROR]:
     'bg-red-50 text-red-900 border-red-200 dark:bg-red-950 dark:text-red-100 dark:border-red-800',
-  info: 'bg-slate-50 text-slate-900 border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700',
+  [ToastKind.INFO]:
+    'bg-slate-50 text-slate-900 border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700',
 };
 
 export function Toast({ message, kind }: ToastProps) {

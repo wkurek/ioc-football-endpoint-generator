@@ -1,5 +1,12 @@
-import type { Lineups, Player, TeamLineup } from '@/domain/types';
+import { Side, type Lineups, type Player, type TeamLineup } from '@/domain/types';
 import type { ResTeamAthleteT, ResTeamCoachT, ResTeamItemT } from '@/data/api/schemas';
+import {
+  EeCode,
+  EueCode,
+  FunctionCode,
+  StarterFlag,
+  type FunctionCode as FunctionCodeT,
+} from '@/data/api/codes';
 import { formatPersonName } from './name';
 import { mapPosition } from './position';
 
@@ -16,17 +23,17 @@ import { mapPosition } from './position';
  * rest → bench. Both lists naturally come out in GK→DF→MF→FW order.
  */
 export function buildLineups(items: ResTeamItemT[]): Lineups {
-  const homeItem = findTeamByHomeAway(items, 'HOME');
-  const awayItem = findTeamByHomeAway(items, 'AWAY');
+  const homeItem = findTeamByHomeAway(items, Side.HOME);
+  const awayItem = findTeamByHomeAway(items, Side.AWAY);
   return {
     home: buildTeamLineup(homeItem),
     away: buildTeamLineup(awayItem),
   };
 }
 
-function findTeamByHomeAway(items: ResTeamItemT[], target: 'HOME' | 'AWAY'): ResTeamItemT {
+function findTeamByHomeAway(items: ResTeamItemT[], target: Side): ResTeamItemT {
   const found = items.find((it) =>
-    it.eventUnitEntries.some((e) => e.eue_code === 'HOME_AWAY' && e.eue_value === target),
+    it.eventUnitEntries.some((e) => e.eue_code === EueCode.HOME_AWAY && e.eue_value === target),
   );
   if (!found) {
     throw new Error(`buildLineups: no team item with HOME_AWAY=${target}`);
@@ -35,7 +42,7 @@ function findTeamByHomeAway(items: ResTeamItemT[], target: 'HOME' | 'AWAY'): Res
 }
 
 export function buildTeamLineup(item: ResTeamItemT): TeamLineup {
-  const formation = item.eventUnitEntries.find((e) => e.eue_code === 'FORMATION')?.eue_value;
+  const formation = item.eventUnitEntries.find((e) => e.eue_code === EueCode.FORMATION)?.eue_value;
   if (!formation) {
     throw new Error(`buildTeamLineup: missing FORMATION for team ${item.participant.name}`);
   }
@@ -69,8 +76,14 @@ export function buildTeamLineup(item: ResTeamItemT): TeamLineup {
  *
  * Falls back to the first non-assistant coach if no precedence match is found.
  */
-const HEAD_COACH_FUNCTION_CODES = ['COACH', 'SI_COA', 'INT_COA'] as const;
-const ASSISTANT_COACH_FUNCTION_CODES = new Set(['AST_COA']);
+const HEAD_COACH_FUNCTION_CODES: readonly FunctionCodeT[] = [
+  FunctionCode.COACH,
+  FunctionCode.STAND_IN_COACH,
+  FunctionCode.INTERIM_COACH,
+];
+const ASSISTANT_COACH_FUNCTION_CODES: ReadonlySet<FunctionCodeT> = new Set([
+  FunctionCode.ASSISTANT_COACH,
+]);
 
 function pickHeadCoachName(coaches: ResTeamCoachT[]): string | undefined {
   for (const fc of HEAD_COACH_FUNCTION_CODES) {
@@ -79,7 +92,7 @@ function pickHeadCoachName(coaches: ResTeamCoachT[]): string | undefined {
   }
   // Defensive fallback: any coach that isn't explicitly an assistant.
   const fallback = coaches.find(
-    (c) => !ASSISTANT_COACH_FUNCTION_CODES.has(c.function.functionCode),
+    (c) => !ASSISTANT_COACH_FUNCTION_CODES.has(c.function.functionCode as FunctionCodeT),
   );
   return fallback ? formatPersonName(fallback.coach) : undefined;
 }
@@ -87,7 +100,7 @@ function pickHeadCoachName(coaches: ResTeamCoachT[]): string | undefined {
 export function isStarter(athlete: ResTeamAthleteT): boolean {
   return (
     athlete.eventUnitEntries?.some(
-      (e) => e.eue_code === 'STARTER' && e.eue_value === 'Y',
+      (e) => e.eue_code === EueCode.STARTER && e.eue_value === StarterFlag.YES,
     ) ?? false
   );
 }
@@ -98,7 +111,7 @@ export function toPlayer(athlete: ResTeamAthleteT): Player {
     throw new Error(`toPlayer: bib "${athlete.bib}" is not a valid integer`);
   }
   const broadPos = athlete.athlete.registeredEvents
-    ?.[0]?.eventEntries.find((e) => e.ee_code === 'POSITION')?.ee_value;
+    ?.[0]?.eventEntries.find((e) => e.ee_code === EeCode.POSITION)?.ee_value;
   if (!broadPos) {
     throw new Error(
       `toPlayer: missing POSITION for athlete ${athlete.athlete.name} (bib ${athlete.bib})`,

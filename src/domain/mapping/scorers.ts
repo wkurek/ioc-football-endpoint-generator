@@ -1,5 +1,6 @@
-import type { Scorer, GoalType } from '@/domain/types';
+import { GoalType, type Scorer } from '@/domain/types';
 import type { ResByRscH2H, ResPbpaActionT, ResTeamItemT } from '@/data/api/schemas';
+import { PbpaAction, PbpatRole, PeriodCode } from '@/data/api/codes';
 import { formatPersonName } from './name';
 
 /**
@@ -31,9 +32,9 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
   const collected: Intermediate[] = [];
 
   for (const block of res.results.playByPlay ?? []) {
-    if (block.subcode === 'PSO') continue;
+    if (block.subcode === PeriodCode.PENALTY_SHOOTOUT) continue;
     for (const action of block.actions) {
-      if (action.pbpa_period === 'PSO') continue;
+      if (action.pbpa_period === PeriodCode.PENALTY_SHOOTOUT) continue;
 
       const competitors = action.competitors ?? [];
 
@@ -41,7 +42,7 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       // lists the player on his OWN team in competitors[] (no "SCR" role) and
       // moves the score to the opposing side. Per FIFA convention we credit the
       // goal to the beneficiary (opposing) team while keeping the player's name.
-      if (action.pbpa_Action === 'OG') {
+      if (action.pbpa_Action === PbpaAction.OWN_GOAL) {
         const ogScorer = buildOwnGoalScorer(action, teamsMeta);
         if (ogScorer) collected.push(ogScorer);
         continue;
@@ -49,7 +50,7 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
 
       // Find the scoring competitor (the one whose athletes[] has SCR).
       const scoringComp = competitors.find((c) =>
-        (c.athletes ?? []).some((a) => a.pbpat_role === 'SCR'),
+        (c.athletes ?? []).some((a) => a.pbpat_role === PbpatRole.SCORER),
       );
       if (!scoringComp) continue;
 
@@ -59,7 +60,7 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       // each. Throw on multi-cardinality so schema drift surfaces as a
       // per-match error (CONVENTIONS.md §11c, §27) instead of silently dropping
       // the extras via `.find()` first-wins.
-      const scorerEntries = scoringAthletes.filter((a) => a.pbpat_role === 'SCR');
+      const scorerEntries = scoringAthletes.filter((a) => a.pbpat_role === PbpatRole.SCORER);
       if (scorerEntries.length > 1) {
         throw new Error(
           `buildScorers: action ${action.pbpa_id} has ${scorerEntries.length} SCR athletes (expected ≤1) — schema drift?`,
@@ -68,7 +69,7 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       const scorerEntry = scorerEntries[0];
       if (!scorerEntry) continue;
 
-      const assistEntries = scoringAthletes.filter((a) => a.pbpat_role === 'ASSIST');
+      const assistEntries = scoringAthletes.filter((a) => a.pbpat_role === PbpatRole.ASSIST);
       if (assistEntries.length > 1) {
         throw new Error(
           `buildScorers: action ${action.pbpa_id} has ${assistEntries.length} ASSIST athletes (expected ≤1) — schema drift?`,
@@ -184,7 +185,7 @@ function buildOwnGoalScorer(
     team: beneficiaryEntry[1].name,
     player: scorerName,
     minute,
-    type: 'open_play',
+    type: GoalType.OPEN_PLAY,
     _order: action.pbpa_order,
   };
 }
@@ -214,6 +215,6 @@ export function parseMinute(when: string | undefined): number | null {
  *   anything else                    → "open_play"
  */
 export function classifyGoalType(pbpaAction: string): GoalType {
-  if (pbpaAction === 'PEN') return 'penalty';
-  return 'open_play';
+  if (pbpaAction === PbpaAction.PENALTY) return GoalType.PENALTY;
+  return GoalType.OPEN_PLAY;
 }

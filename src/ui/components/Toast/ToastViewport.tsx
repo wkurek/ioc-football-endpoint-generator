@@ -1,4 +1,5 @@
-import { Toast, type ToastKind } from './Toast';
+import { Toast } from './Toast';
+import type { ToastKind } from '@/ui/types';
 
 export interface ToastItem {
   id: string;

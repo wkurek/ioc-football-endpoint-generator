@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Match } from '@/domain/types';
+import { FieldSource, type Match } from '@/domain/types';
 import { buildJsonLines } from '@/domain/display/jsonLines';
 import { urlForH2HOnDate, urlForRes } from '@/data/api/stacy-client';
 import { JsonLineRow } from './JsonLineRow';
@@ -34,7 +34,11 @@ export function GeneratedView({ match, eventUnitCode }: GeneratedViewProps) {
             line={line}
             colorize={colorize}
             sourceUrl={
-              line.source === 'sch' ? schUrl : line.source === 'res' ? resUrl : undefined
+              line.source === FieldSource.SCH
+                ? schUrl
+                : line.source === FieldSource.RES
+                  ? resUrl
+                  : undefined
             }
           />
         ))}

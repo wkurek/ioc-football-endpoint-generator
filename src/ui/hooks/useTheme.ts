@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
+import { Theme, type ResolvedTheme } from '@/ui/types';
 
-export type Theme = 'light' | 'dark' | 'system';
-export type ResolvedTheme = 'light' | 'dark';
+export { Theme, type ResolvedTheme } from '@/ui/types';
 
 export interface ThemeContextValue {
   theme: Theme;
@@ -17,9 +17,9 @@ export function useTheme(): ThemeContextValue {
 }
 
 export function resolveTheme(t: Theme): ResolvedTheme {
-  if (t === 'system') {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if (t === Theme.SYSTEM) {
+    if (typeof window === 'undefined') return Theme.LIGHT;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
   }
   return t;
 }
@@ -27,7 +27,7 @@ export function resolveTheme(t: Theme): ResolvedTheme {
 export function applyThemeClass(resolved: ResolvedTheme) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  if (resolved === 'dark') {
+  if (resolved === Theme.DARK) {
     root.classList.add('dark');
   } else {
     root.classList.remove('dark');

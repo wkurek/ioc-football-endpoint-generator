@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import type { Phase } from '@/domain/matchSummary';
+import { Phase } from '@/domain/types';
 
 interface PhaseFilterProps {
   /** undefined = all phases included */
@@ -8,20 +8,26 @@ interface PhaseFilterProps {
   onChange: (next: ReadonlySet<Phase> | undefined) => void;
 }
 
-const PHASES: Phase[] = ['group', 'qf', 'sf', 'bronze', 'gold'];
+const PHASES: readonly Phase[] = [
+  Phase.GROUP,
+  Phase.QUARTER_FINAL,
+  Phase.SEMI_FINAL,
+  Phase.BRONZE,
+  Phase.GOLD,
+];
 
-const LABEL_KEYS: Record<Phase, string> = {
-  group: 'Group',
-  qf: 'QF',
-  sf: 'SF',
-  bronze: 'Bronze',
-  gold: 'Final',
+const LABEL_KEYS: Readonly<Record<Phase, string>> = {
+  [Phase.GROUP]: 'Group',
+  [Phase.QUARTER_FINAL]: 'QF',
+  [Phase.SEMI_FINAL]: 'SF',
+  [Phase.BRONZE]: 'Bronze',
+  [Phase.GOLD]: 'Final',
 };
 
 export function PhaseFilter({ value, onChange }: PhaseFilterProps) {
   const { t } = useTranslation();
   // Treat undefined as "all" — convert to a Set for the ToggleGroup, then back.
-  const valueArray = value ? [...value] : PHASES;
+  const valueArray = value ? [...value] : [...PHASES];
 
   const handleChange = (next: string[]) => {
     if (next.length === PHASES.length) {

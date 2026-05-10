@@ -20,6 +20,7 @@ import { FiltersToolbar } from '@/ui/components/Filters/FiltersToolbar';
 import { MatchesTable } from '@/ui/components/MatchesTable/MatchesTable';
 import { MatchesCards } from '@/ui/components/MatchesTable/MatchesCards';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
+import { PipelinePhase } from '@/ui/types';
 
 export function MatchesPage() {
   const { t } = useTranslation();
@@ -76,7 +77,7 @@ export function MatchesPage() {
     download(filenameBulkSelected(bulk.length), exportBulkAsJson(bulk));
   };
 
-  const isReady = pipeline.phase === 'ready';
+  const isReady = pipeline.phase === PipelinePhase.READY;
   const allDownloadable = pipeline.entries.filter((e) => !!e.match).length;
   const selectedDownloadable = pipeline.entries.filter(
     (e) => selection.has(e.code) && !!e.match,

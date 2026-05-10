@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
 import { useMatchesState } from '@/ui/state/MatchesStateProvider';
+import { BannerKind, PipelinePhase } from '@/ui/types';
 import { Banner } from '@/ui/components/Banner';
 import { MatchHeader } from '@/ui/components/MatchDetail/MatchHeader';
 import { MatchTabs } from '@/ui/components/MatchDetail/MatchTabs';
@@ -33,26 +34,28 @@ export function MatchDetailPage() {
         {t('actions.backToMatches')}
       </Link>
 
-      {!entry && pipeline.phase !== 'idle' && pipeline.phase !== 'ready' && (
-        <Banner kind="info" icon={Loader2}>
-          {t('states.loading')}
-        </Banner>
-      )}
+      {!entry &&
+        pipeline.phase !== PipelinePhase.IDLE &&
+        pipeline.phase !== PipelinePhase.READY && (
+          <Banner kind={BannerKind.INFO} icon={Loader2}>
+            {t('states.loading')}
+          </Banner>
+        )}
 
-      {!entry && pipeline.phase === 'ready' && (
-        <Banner kind="error" icon={AlertTriangle}>
+      {!entry && pipeline.phase === PipelinePhase.READY && (
+        <Banner kind={BannerKind.ERROR} icon={AlertTriangle}>
           Match not found: {eventUnitCode}
         </Banner>
       )}
 
       {entry && entry.buildError && (
-        <Banner kind="error" icon={AlertTriangle} onRetry={retry}>
+        <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={retry}>
           Failed to build match: {entry.buildError.message}
         </Banner>
       )}
 
       {entry && !entry.match && !entry.buildError && (
-        <Banner kind="info" icon={Loader2}>
+        <Banner kind={BannerKind.INFO} icon={Loader2}>
           {t('states.loadingRes', { loaded: pipeline.resLoaded, total: pipeline.resTotal })}
         </Banner>
       )}

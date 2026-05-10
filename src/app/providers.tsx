@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { ThemeContext, type Theme, resolveTheme, applyThemeClass } from '@/ui/hooks/useTheme';
+import { ThemeContext, Theme, resolveTheme, applyThemeClass } from '@/ui/hooks/useTheme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,17 +20,17 @@ const THEME_STORAGE_KEY = 'theme';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return Theme.SYSTEM;
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return (stored as Theme | null) ?? 'system';
+    return (stored as Theme | null) ?? Theme.SYSTEM;
   });
 
   useEffect(() => {
     applyThemeClass(resolveTheme(theme));
-    if (theme === 'system') {
+    if (theme === Theme.SYSTEM) {
       window.localStorage.removeItem(THEME_STORAGE_KEY);
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      const onChange = () => applyThemeClass(resolveTheme('system'));
+      const onChange = () => applyThemeClass(resolveTheme(Theme.SYSTEM));
       mq.addEventListener('change', onChange);
       return () => mq.removeEventListener('change', onChange);
     }

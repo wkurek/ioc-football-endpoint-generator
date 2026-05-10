@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { ToastViewport, type ToastItem } from '@/ui/components/Toast/ToastViewport';
-import type { ToastKind } from '@/ui/components/Toast/Toast';
+import { ToastKind } from '@/ui/types';
 
 interface ToastContextValue {
   show: (message: string, kind?: ToastKind) => void;
@@ -23,7 +23,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   // Stable reference for ID generation across renders.
   const seqRef = useRef(0);
 
-  const show = useCallback((message: string, kind: ToastKind = 'info') => {
+  const show = useCallback((message: string, kind: ToastKind = ToastKind.INFO) => {
     seqRef.current += 1;
     const id = `t${seqRef.current}`;
     setToasts((prev) => [...prev, { id, message, kind }]);

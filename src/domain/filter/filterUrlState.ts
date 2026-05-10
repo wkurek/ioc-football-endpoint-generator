@@ -1,9 +1,10 @@
 import {
+  ALL_TOURNAMENTS,
   EMPTY_FILTER,
   type FilterCriteria,
   type TournamentFilter,
 } from './matchFilters';
-import type { Phase } from '@/domain/matchSummary';
+import { Phase, Tournament } from '@/domain/types';
 
 /**
  * Pure (de)serializers between FilterCriteria and URL search params.
@@ -24,15 +25,21 @@ import type { Phase } from '@/domain/matchSummary';
  * Round-trip: `paramsToCriteria(criteriaToParams(c)) ≡ c` for any valid criteria.
  */
 
-const ALL_PHASES: readonly Phase[] = ['group', 'qf', 'sf', 'bronze', 'gold'];
+const ALL_PHASES: readonly Phase[] = [
+  Phase.GROUP,
+  Phase.QUARTER_FINAL,
+  Phase.SEMI_FINAL,
+  Phase.BRONZE,
+  Phase.GOLD,
+];
 
 /** Internal Phase → URL token. We surface `gold` as `final` to match the UI label. */
-const PHASE_TO_URL: Record<Phase, string> = {
-  group: 'group',
-  qf: 'qf',
-  sf: 'sf',
-  bronze: 'bronze',
-  gold: 'final',
+const PHASE_TO_URL: Readonly<Record<Phase, string>> = {
+  [Phase.GROUP]: 'group',
+  [Phase.QUARTER_FINAL]: 'qf',
+  [Phase.SEMI_FINAL]: 'sf',
+  [Phase.BRONZE]: 'bronze',
+  [Phase.GOLD]: 'final',
 };
 
 /** URL token → internal Phase. Reverse of PHASE_TO_URL. */
@@ -44,7 +51,7 @@ const YMD_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export function criteriaToParams(c: FilterCriteria): URLSearchParams {
   const p = new URLSearchParams();
-  if (c.tournament !== 'all') p.set('t', c.tournament);
+  if (c.tournament !== ALL_TOURNAMENTS) p.set('t', c.tournament);
   if (c.phases !== undefined) {
     p.set(
       'r',
@@ -63,7 +70,8 @@ export function criteriaToParams(c: FilterCriteria): URLSearchParams {
 
 export function paramsToCriteria(params: URLSearchParams): FilterCriteria {
   const t = params.get('t');
-  const tournament: TournamentFilter = t === 'men' || t === 'women' ? t : 'all';
+  const tournament: TournamentFilter =
+    t === Tournament.MEN || t === Tournament.WOMEN ? t : ALL_TOURNAMENTS;
 
   const r = params.get('r');
   let phases: ReadonlySet<Phase> | undefined;

@@ -1,11 +1,11 @@
-import type { FieldSource, Match } from '@/domain/types';
+import { NEUTRAL, type LineSource, type Match } from '@/domain/types';
 import { pathSource } from './pathSource';
 
 export interface JsonLine {
   /** Already-indented line text, with quotes/braces/commas as appropriate. */
   text: string;
-  /** Source tag for color highlight (`'neutral'` for structural lines). */
-  source: FieldSource | 'neutral';
+  /** Source tag for color highlight (`NEUTRAL` for structural lines). */
+  source: LineSource;
 }
 
 /**
@@ -19,9 +19,9 @@ export interface JsonLine {
  */
 export function buildJsonLines(match: Match): JsonLine[] {
   const lines: JsonLine[] = [];
-  lines.push({ text: '{', source: 'neutral' });
+  lines.push({ text: '{', source: NEUTRAL });
   emitObjectBody(lines, match as unknown as Record<string, unknown>, [], 1);
-  lines.push({ text: '}', source: 'neutral' });
+  lines.push({ text: '}', source: NEUTRAL });
   return lines;
 }
 
@@ -125,26 +125,26 @@ function emitArrayItem(
 
 /**
  * Returns the source if every leaf descendant of `value` shares the same
- * source tag; otherwise `'neutral'`. Empty containers fall back to
+ * source tag; otherwise `NEUTRAL`. Empty containers fall back to
  * `pathSource(path)` (no leaves to disagree).
  */
-function blockSource(value: unknown, path: string[]): FieldSource | 'neutral' {
+function blockSource(value: unknown, path: string[]): LineSource {
   if (value === null || typeof value !== 'object') return pathSource(path);
   const keys = Array.isArray(value)
     ? (value as unknown[]).map((_, i) => String(i))
     : Object.keys(value as Record<string, unknown>);
   if (keys.length === 0) return pathSource(path);
 
-  let agreed: FieldSource | 'neutral' | null = null;
+  let agreed: LineSource | null = null;
   for (const k of keys) {
     const child = (value as Record<string, unknown>)[k];
     const childSrc =
       child !== null && typeof child === 'object'
         ? blockSource(child, [...path, k])
         : pathSource([...path, k]);
-    if (childSrc === 'neutral') return 'neutral';
+    if (childSrc === NEUTRAL) return NEUTRAL;
     if (agreed === null) agreed = childSrc;
-    else if (agreed !== childSrc) return 'neutral';
+    else if (agreed !== childSrc) return NEUTRAL;
   }
-  return agreed ?? 'neutral';
+  return agreed ?? NEUTRAL;
 }

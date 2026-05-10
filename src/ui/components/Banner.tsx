@@ -1,8 +1,9 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
+import { BannerKind } from '@/ui/types';
 
-export type BannerKind = 'info' | 'success' | 'warn' | 'error';
+export { BannerKind } from '@/ui/types';
 
 interface BannerProps {
   kind: BannerKind;
@@ -14,25 +15,30 @@ interface BannerProps {
 }
 
 const KIND_CLASSES: Record<BannerKind, string> = {
-  info: 'bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200',
-  success:
+  [BannerKind.INFO]:
+    'bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200',
+  [BannerKind.SUCCESS]:
     'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200',
-  warn: 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200',
-  error:
+  [BannerKind.WARN]:
+    'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200',
+  [BannerKind.ERROR]:
     'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-200',
 };
 
 const RETRY_BTN_CLASSES: Record<BannerKind, string> = {
-  info: 'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800',
-  success:
+  [BannerKind.INFO]:
+    'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800',
+  [BannerKind.SUCCESS]:
     'border-emerald-300 hover:bg-emerald-100 dark:border-emerald-700 dark:hover:bg-emerald-900/40',
-  warn: 'border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/40',
-  error: 'border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900/40',
+  [BannerKind.WARN]:
+    'border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/40',
+  [BannerKind.ERROR]:
+    'border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900/40',
 };
 
 export function Banner({ kind, icon: Icon, children, onRetry }: BannerProps) {
   const { t } = useTranslation();
-  const spinning = kind === 'info';
+  const spinning = kind === BannerKind.INFO;
   return (
     <div
       role="status"

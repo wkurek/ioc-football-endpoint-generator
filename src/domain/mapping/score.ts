@@ -1,4 +1,5 @@
 import type { Score } from '@/domain/types';
+import { PeriodCode } from '@/data/api/codes';
 import type { z } from 'zod';
 
 interface PeriodLike {
@@ -20,8 +21,8 @@ interface PeriodLike {
  * PSO winner is intentionally not encoded — see CONVENTIONS.md #8.
  */
 export function buildScore(periods: PeriodLike[]): Score {
-  const tot = periods.find((p) => p.p_code === 'TOT');
-  const h1 = periods.find((p) => p.p_code === 'H1');
+  const tot = periods.find((p) => p.p_code === PeriodCode.TOTAL);
+  const h1 = periods.find((p) => p.p_code === PeriodCode.FIRST_HALF);
 
   if (!tot) throw new Error('buildScore: missing TOT period');
   if (!h1) throw new Error('buildScore: missing H1 period');

@@ -1,6 +1,9 @@
-import type { MatchSummary, Phase, Tournament } from '@/domain/matchSummary';
+import { Tournament, type Phase } from '@/domain/types';
+import type { MatchSummary } from '@/domain/matchSummary';
 
-export type TournamentFilter = 'all' | Tournament;
+/** Filter mode for tournament — `'all'` means no filter applied. */
+export const ALL_TOURNAMENTS = 'all';
+export type TournamentFilter = typeof ALL_TOURNAMENTS | Tournament;
 
 export interface FilterCriteria {
   /** "all" | "men" | "women" — single-select toggle. */
@@ -16,7 +19,7 @@ export interface FilterCriteria {
 }
 
 export const EMPTY_FILTER: FilterCriteria = {
-  tournament: 'all',
+  tournament: ALL_TOURNAMENTS,
   phases: undefined,
   dateFrom: undefined,
   dateTo: undefined,
@@ -34,7 +37,8 @@ export function filterMatches(
   const search = criteria.search.trim().toLowerCase();
 
   return matches.filter((m) => {
-    if (criteria.tournament !== 'all' && m.tournament !== criteria.tournament) return false;
+    if (criteria.tournament !== ALL_TOURNAMENTS && m.tournament !== criteria.tournament)
+      return false;
 
     if (criteria.phases && !criteria.phases.has(m.phase)) return false;
 
@@ -54,10 +58,15 @@ export function filterMatches(
 /** Returns true if no filter is active (all matches pass through). */
 export function isEmptyFilter(c: FilterCriteria): boolean {
   return (
-    c.tournament === 'all' &&
+    c.tournament === ALL_TOURNAMENTS &&
     !c.phases &&
     !c.dateFrom &&
     !c.dateTo &&
     c.search.trim() === ''
   );
+}
+
+/** Type guard: is the value a non-`'all'` tournament filter? */
+export function isTournament(value: TournamentFilter): value is Tournament {
+  return value === Tournament.MEN || value === Tournament.WOMEN;
 }

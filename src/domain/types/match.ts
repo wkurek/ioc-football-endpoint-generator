@@ -1,12 +1,9 @@
 /**
- * Output types — strictly mirror example.json shape (CONVENTIONS.md #1).
- * Each Match instance is a single endpoint response.
+ * Output interfaces — strictly mirror `example.json` shape (CONVENTIONS.md #1).
+ * Each `Match` instance is a single endpoint response.
  */
 
-export type GoalType = 'open_play' | 'header' | 'penalty';
-
-export type Position = 'GK' | 'CB' | 'CM' | 'FW';
-// example.json uses 11 granular position codes; we emit only 4 (CONVENTIONS.md #26).
+import type { GoalType, Position, MatchStatus } from './enums';
 
 export interface Player {
   name: string;
@@ -68,13 +65,10 @@ export interface Match {
   venue: Venue;
   /** ISO 8601 with timezone, preserved as-is (CONVENTIONS.md #17). */
   kickoff: string;
-  /** Always "FT" — only FINISHED is mapped, other codes throw (CONVENTIONS.md #12). */
-  status: string;
+  /** Always `MatchStatus.FULL_TIME` ("FT") today (CONVENTIONS.md #12). */
+  status: MatchStatus;
   teams: Teams;
   score: Score;
   scorers: Scorer[];
   lineups: Lineups;
 }
-
-/** Source-of-truth tag for per-field annotation in the Generated view (CONVENTIONS.md #37). */
-export type FieldSource = 'sch' | 'res' | 'const';

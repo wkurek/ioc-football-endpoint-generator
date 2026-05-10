@@ -9,6 +9,9 @@ import { buildMatchSummary, type MatchSummary } from '@/domain/matchSummary';
 import { compareMatchSummary } from '@/domain/sort/sortKey';
 import type { Match } from '@/domain/types';
 import type { SchSchedule } from '@/data/api/schemas';
+import { PipelinePhase } from '@/ui/types';
+
+export { PipelinePhase } from '@/ui/types';
 
 export interface MatchEntry {
   /** eventUnit.code */
@@ -21,7 +24,7 @@ export interface MatchEntry {
 }
 
 export interface PipelineState {
-  phase: 'idle' | 'days' | 'h2h' | 'res' | 'ready';
+  phase: PipelinePhase;
   /** Sorted list of matches (CONVENTIONS.md #15). */
   entries: MatchEntry[];
   /**
@@ -114,12 +117,12 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     [entries],
   );
 
-  let phase: PipelineState['phase'] = 'idle';
+  let phase: PipelinePhase = PipelinePhase.IDLE;
   if (enabled) {
-    if (daysQuery.isLoading) phase = 'days';
-    else if (h2h.isLoading) phase = 'h2h';
-    else if (res.isLoading) phase = 'res';
-    else if (allSchedules.length > 0) phase = 'ready';
+    if (daysQuery.isLoading) phase = PipelinePhase.DAYS;
+    else if (h2h.isLoading) phase = PipelinePhase.H2H;
+    else if (res.isLoading) phase = PipelinePhase.RES;
+    else if (allSchedules.length > 0) phase = PipelinePhase.READY;
   }
 
   const retry = useCallback(() => {

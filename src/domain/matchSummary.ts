@@ -1,3 +1,5 @@
+import { Phase, Side, Tournament, type MatchStatus } from '@/domain/types';
+import { EueCode } from '@/data/api/codes';
 import type { SchSchedule, ResByRscH2H } from '@/data/api/schemas';
 import { parseCityFromLocation } from '@/domain/mapping/venue';
 import { mapStatus } from '@/domain/mapping/status';
@@ -5,8 +7,8 @@ import { buildScore } from '@/domain/mapping/score';
 import { computeMatchNumberInPhase } from '@/domain/mapping/round';
 import { buildRound } from '@/domain/mapping/competition';
 
-export type Tournament = 'men' | 'women';
-export type Phase = 'group' | 'qf' | 'sf' | 'bronze' | 'gold';
+// Re-exported for backwards-compat with existing imports of `@/domain/matchSummary`.
+export { Phase, Tournament } from '@/domain/types';
 
 /**
  * Light-weight per-match record used to drive the matches table and the
@@ -22,7 +24,7 @@ export interface MatchSummary {
   date: string;
   tournament: Tournament;
   phase: Phase;
-  /** Group letter for `phase === 'group'` (A/B/C/D), undefined otherwise. */
+  /** Group letter for `phase === Phase.GROUP` (A/B/C/D), undefined otherwise. */
   groupLetter?: string;
   /** Human-readable round label (`competition.round`). */
   round: string;
@@ -34,7 +36,7 @@ export interface MatchSummary {
   scoreText?: string;
   venue: string;
   city: string;
-  status: string;
+  status: MatchStatus;
 }
 
 interface BuildMatchSummaryInput {
@@ -47,7 +49,7 @@ interface BuildMatchSummaryInput {
 export function buildMatchSummary({ sch, allMatches, res }: BuildMatchSummaryInput): MatchSummary {
   const tournament = detectTournament(sch.eventUnit.code);
   const phase = detectPhase(sch.eventUnit.code);
-  const groupLetter = phase === 'group' ? detectGroupLetter(sch.eventUnit.code) : undefined;
+  const groupLetter = phase === Phase.GROUP ? detectGroupLetter(sch.eventUnit.code) : undefined;
   const matchNumber = computeMatchNumberInPhase(allMatches, sch.eventUnit.code);
   const round = buildRound(sch.eventUnit.longDescription, matchNumber);
 
@@ -71,19 +73,38 @@ export function buildMatchSummary({ sch, allMatches, res }: BuildMatchSummaryInp
   };
 }
 
+/** Tournament detection patterns keyed off `eventUnit.code` prefix. */
+const TOURNAMENT_PREFIX: Readonly<Record<Tournament, string>> = {
+  [Tournament.MEN]: 'FBLM',
+  [Tournament.WOMEN]: 'FBLW',
+};
+
 export function detectTournament(eventUnitCode: string): Tournament {
-  // FBLM... = Men's, FBLW... = Women's
-  if (eventUnitCode.startsWith('FBLM')) return 'men';
-  if (eventUnitCode.startsWith('FBLW')) return 'women';
+  for (const [tournament, prefix] of Object.entries(TOURNAMENT_PREFIX) as [Tournament, string][]) {
+    if (eventUnitCode.startsWith(prefix)) return tournament;
+  }
   throw new Error(`detectTournament: cannot detect tournament from "${eventUnitCode}"`);
 }
 
+/**
+ * Substring/regex patterns embedded in `eventUnit.code` that reveal the phase.
+ * Order matters: GOLD/BRONZE share the `FNL-` prefix and must be checked before
+ * generic finals; GROUP uses a regex because the group letter varies.
+ */
+const PHASE_PATTERNS: ReadonlyArray<readonly [Phase, string | RegExp]> = [
+  [Phase.GOLD, 'FNL-000100--'],
+  [Phase.BRONZE, 'FNL-000200--'],
+  [Phase.SEMI_FINAL, 'SFNL'],
+  [Phase.QUARTER_FINAL, 'QFNL'],
+  [Phase.GROUP, /GP[A-Z]-/],
+];
+
 export function detectPhase(eventUnitCode: string): Phase {
-  if (eventUnitCode.includes('FNL-000100--')) return 'gold';
-  if (eventUnitCode.includes('FNL-000200--')) return 'bronze';
-  if (eventUnitCode.includes('SFNL')) return 'sf';
-  if (eventUnitCode.includes('QFNL')) return 'qf';
-  if (/GP[A-Z]-/.test(eventUnitCode)) return 'group';
+  for (const [phase, pattern] of PHASE_PATTERNS) {
+    const matches =
+      typeof pattern === 'string' ? eventUnitCode.includes(pattern) : pattern.test(eventUnitCode);
+    if (matches) return phase;
+  }
   throw new Error(`detectPhase: cannot detect phase from "${eventUnitCode}"`);
 }
 
@@ -100,9 +121,9 @@ function pickTeams(sch: SchSchedule, res?: ResByRscH2H): { homeTeam: string; awa
     let home: string | undefined;
     let away: string | undefined;
     for (const item of res.results.items) {
-      const ha = item.eventUnitEntries.find((e) => e.eue_code === 'HOME_AWAY')?.eue_value;
-      if (ha === 'HOME') home = item.participant.name;
-      else if (ha === 'AWAY') away = item.participant.name;
+      const ha = item.eventUnitEntries.find((e) => e.eue_code === EueCode.HOME_AWAY)?.eue_value;
+      if (ha === Side.HOME) home = item.participant.name;
+      else if (ha === Side.AWAY) away = item.participant.name;
     }
     if (home && away) return { homeTeam: home, awayTeam: away };
   }
