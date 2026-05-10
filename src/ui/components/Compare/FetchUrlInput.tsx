@@ -22,6 +22,10 @@ export function FetchUrlInput({ onFetched }: FetchUrlInputProps) {
   const handleFetch = async () => {
     const trimmed = url.trim();
     if (!trimmed) return;
+    if (!/^https?:\/\//i.test(trimmed)) {
+      setError(translateError(new TranslatableError('errors.compare.fetchInvalidScheme'), t));
+      return;
+    }
     setLoading(true);
     setError(undefined);
     try {

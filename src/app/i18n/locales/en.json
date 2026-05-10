@@ -137,7 +137,8 @@
     },
     "compare": {
       "fetchHttp": "HTTP {{status}} {{statusText}}",
-      "fetchInvalidJson": "Response is not valid JSON"
+      "fetchInvalidJson": "Response is not valid JSON",
+      "fetchInvalidScheme": "URL must start with http:// or https://"
     }
   },
   "match": {

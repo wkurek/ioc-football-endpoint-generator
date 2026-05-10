@@ -78,7 +78,7 @@ export function MatchesTable({
                     key={header.id}
                     scope="col"
                     className="px-3 py-2 align-middle font-medium"
-                    style={{ width: header.getSize() === 150 ? undefined : header.getSize() }}
+                    style={{ width: header.column.columnDef.size }}
                   >
                     {canSort ? (
                       <button

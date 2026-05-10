@@ -1,8 +1,8 @@
+import type { SortDirection } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
 
 interface SortIndicatorProps {
-  /** TanStack Table's sort direction value: false (none) | 'asc' | 'desc'. */
-  direction: false | 'asc' | 'desc';
+  direction: SortDirection | false;
 }
 
 export function SortIndicator({ direction }: SortIndicatorProps) {

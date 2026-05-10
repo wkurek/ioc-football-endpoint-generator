@@ -14,6 +14,10 @@ import { FetchUrlInput } from '@/ui/components/Compare/FetchUrlInput';
 import { DiffViewToggle } from '@/ui/components/Compare/DiffViewToggle';
 import { DiffViewer } from '@/ui/components/Compare/DiffViewer';
 
+// Collapses fast typing / paste storms into a single recompute without
+// crossing the perceptual "lag" threshold.
+const ACTUAL_TEXT_DEBOUNCE_MS = 200;
+
 export function ComparePage() {
   const { t } = useTranslation();
   const { eventUnitCode: routeCode } = useParams<{ eventUnitCode: string }>();
@@ -41,9 +45,7 @@ export function ComparePage() {
     [selectedEntry],
   );
 
-  // 200ms collapses fast typing / paste storms into a single recompute
-  // without crossing the perceptual "lag" threshold.
-  const debouncedActualText = useDebouncedValue(actualText, 200);
+  const debouncedActualText = useDebouncedValue(actualText, ACTUAL_TEXT_DEBOUNCE_MS);
   const parsed = useMemo(() => parseJsonInput(debouncedActualText), [debouncedActualText]);
   const actualJson = useMemo(
     () => (parsed.ok ? JSON.stringify(parsed.value, null, 2) : ''),

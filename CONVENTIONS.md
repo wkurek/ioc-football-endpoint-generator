@@ -23,7 +23,7 @@ Forces:
 
 | Field group | Source | Notes |
 |---|---|---|
-| `competition.round` | SCH `eventUnit.longDescription` + computed match number | per-phase 1-based index, sorted by `(startDate, eventUnit.code)` |
+| `competition.round` | SCH `eventUnit.longDescription` + SCH `unitNum` | cumulative per gender (1-32); see §5 |
 | `competition.name` / `season` | constant `"Olympic Games"` / `"Paris 2024"` | not in API |
 | `venue.name` | SCH `venue.description` | |
 | `venue.city` | SCH `location.longDescription`, last segment after `, ` | |
@@ -137,8 +137,7 @@ matches numbered `1, 2, 9, 10, 17, 18` (interleaved with other groups across
 matchdays) — exactly as the page renders them.
 
 A reviewer cross-referencing our `competition.round` against the page sees
-the same label. Earlier iterations of this mapper computed a local 1-6 index
-per group, which read more naturally but disagreed with the source of truth.
+the same label.
 
 ---
 
