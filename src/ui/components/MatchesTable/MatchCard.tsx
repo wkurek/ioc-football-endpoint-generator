@@ -1,8 +1,9 @@
 import { ChevronRight, Download, GitCompare } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
 import { routes } from '@/ui/routes';
+import { useRowNavigation } from '@/ui/hooks/useRowNavigation';
 import { splitKickoff } from './formatKickoff';
 
 interface MatchCardProps {
@@ -14,14 +15,20 @@ interface MatchCardProps {
 
 export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const nav = useRowNavigation(entry.code);
   const s = entry.summary;
   const { date, time } = splitKickoff(s.kickoff);
+  const ariaLabel = t('table.row.openMatch', {
+    home: s.homeTeam,
+    away: s.awayTeam,
+    round: s.round,
+  });
 
   return (
     <div
-      onClick={() => navigate(routes.matchDetail(entry.code))}
-      className="cursor-pointer rounded-md border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900/60"
+      {...nav}
+      aria-label={ariaLabel}
+      className="cursor-pointer rounded-md border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 focus-visible:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900/60 dark:focus-visible:bg-slate-900/60"
     >
       <div className="flex items-start gap-2">
         <input

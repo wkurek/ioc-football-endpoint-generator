@@ -4,8 +4,8 @@ import type { SchSchedule, ResByRscH2H } from '@/data/api/schemas';
 import { parseCityFromLocation } from '@/domain/mapping/venue';
 import { mapStatus } from '@/domain/mapping/status';
 import { buildScore } from '@/domain/mapping/score';
-import { computeMatchNumberInPhase } from '@/domain/mapping/round';
 import { buildRound } from '@/domain/mapping/competition';
+import { parseUnitNum } from '@/domain/mapping/round';
 import { TranslatableError } from '@/domain/errors';
 
 // Re-exported for backwards-compat with existing imports of `@/domain/matchSummary`.
@@ -42,17 +42,15 @@ export interface MatchSummary {
 
 interface BuildMatchSummaryInput {
   sch: SchSchedule;
-  allMatches: readonly SchSchedule[];
   /** When provided, refines homeTeam/awayTeam by `HOME_AWAY` and adds `scoreText`. */
   res?: ResByRscH2H;
 }
 
-export function buildMatchSummary({ sch, allMatches, res }: BuildMatchSummaryInput): MatchSummary {
+export function buildMatchSummary({ sch, res }: BuildMatchSummaryInput): MatchSummary {
   const tournament = detectTournament(sch.eventUnit.code);
   const phase = detectPhase(sch.eventUnit.code);
   const groupLetter = phase === Phase.GROUP ? detectGroupLetter(sch.eventUnit.code) : undefined;
-  const matchNumber = computeMatchNumberInPhase(allMatches, sch.eventUnit.code);
-  const round = buildRound(sch.eventUnit.longDescription, matchNumber);
+  const round = buildRound(sch.eventUnit.longDescription, parseUnitNum(sch));
 
   const { homeTeam, awayTeam } = pickTeams(sch, res);
   const scoreText = res ? formatScoreText(res) : undefined;

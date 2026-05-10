@@ -119,18 +119,26 @@ index — used as a stable tie-breaker.
 
 ---
 
-## 5. `competition.round` — match-number-in-phase
+## 5. `competition.round` — match number from `unitNum`
 
-| Phase | Format | Number |
+| Phase | Format | Number range |
 |---|---|---|
-| Group | `"Men's Group A — Match 1"` | 1-6 per group |
-| QF | `"Men's Quarter-final 1"` | 1-4 per gender |
-| SF | `"Men's Semi-final 1"` | 1-2 per gender |
-| Bronze | `"Men's Bronze Medal Match"` | (no number) |
+| Group | `"Men's Group A — Match 17"` | 1-24 cumulative across all groups |
+| QF | `"Men's Quarter-final 27"` | 25-28 |
+| SF | `"Men's Semi-final 29"` | 29-30 |
+| Bronze | `"Men's Bronze Medal Match"` | (no number — `unitNum=31`/`32` ignored) |
 | Gold | `"Men's Gold Medal Match"` | (no number) |
 
-Local index, sorted by `(startDate, eventUnit.code)` within the phase. NOT
-`unitNum` from API (which is global per day, not per phase).
+Number is `unitNum` from SCH, byte-identical to what the official Olympic
+schedule page (`stacy.olympics.com/en/paris-2024`) shows as "Match N". It's
+a cumulative counter for the whole tournament (Men's = 1-32, Women's = 1-32
+on its own track), not a per-phase reset. So Men's Group A ends up with
+matches numbered `1, 2, 9, 10, 17, 18` (interleaved with other groups across
+matchdays) — exactly as the page renders them.
+
+A reviewer cross-referencing our `competition.round` against the page sees
+the same label. Earlier iterations of this mapper computed a local 1-6 index
+per group, which read more naturally but disagreed with the source of truth.
 
 ---
 
@@ -178,9 +186,15 @@ canonical builder (not `JSON.stringify(match)` + insertion order), so output
 stays byte-stable even if the `Match` interface is reordered.
 
 `exportBulkAsJson` adds a non-output `__metadata__` key at the root with
-`generatedAt` (ISO timestamp), `schemaVersion`, `source.url`, and `count`. This
-is **bulk only** — single-match exports remain a byte-perfect `example.json`
-shape.
+`generatedAt` (ISO timestamp), `schemaVersion`, `source.pageUrl` +
+`source.apiBase`, and `count`. This is **bulk only** — single-match exports
+remain a byte-perfect `example.json` shape. A `BulkExportSchema` (Zod) is
+exported alongside for consumer-side validation.
+
+`__metadata__` appears as the first key thanks to JS insertion order. A
+consumer that serializes the parsed object with alphabetical key sorting
+will see it last (`_` outranks letters in ASCII). Our determinism guarantee
+is insertion order — not alphabetical.
 
 ---
 

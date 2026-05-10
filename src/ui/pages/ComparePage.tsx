@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useMatchesState } from '@/ui/state/MatchesStateProvider';
+import { useDebouncedValue } from '@/ui/hooks/useDebouncedValue';
 import { Banner } from '@/ui/components/Banner';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { exportSingleAsJson } from '@/domain/export/single';
@@ -41,7 +42,12 @@ export function ComparePage() {
     [selectedEntry],
   );
 
-  const parsed = useMemo(() => parseJsonInput(actualText), [actualText]);
+  // Debounce the input that drives the diff. Each keystroke would otherwise
+  // re-parse the JSON and rebuild the diff — expensive for large pastes.
+  // 200 ms is below the perceptual "lag" threshold while still collapsing
+  // a paste / fast typing into a single recompute.
+  const debouncedActualText = useDebouncedValue(actualText, 200);
+  const parsed = useMemo(() => parseJsonInput(debouncedActualText), [debouncedActualText]);
   const actualJson = useMemo(
     () => (parsed.ok ? JSON.stringify(parsed.value, null, 2) : ''),
     [parsed],

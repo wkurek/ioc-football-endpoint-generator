@@ -9,7 +9,6 @@
   },
   "actions": {
     "loadMatches": "Load matches",
-    "generateAll": "Generate all endpoints",
     "downloadAll": "Download all",
     "downloadSelected": "Download selected ({{count}})",
     "downloadSingle": "Download this match",
@@ -41,7 +40,10 @@
     },
     "empty": "No matches loaded yet.",
     "emptyFiltered": "No matches match the current filters.",
-    "summary": "{{filtered}} of {{total}} matches"
+    "summary": "{{filtered}} of {{total}} matches",
+    "row": {
+      "openMatch": "Open match: {{home}} vs {{away}}, {{round}}"
+    }
   },
   "filters": {
     "tournament": {

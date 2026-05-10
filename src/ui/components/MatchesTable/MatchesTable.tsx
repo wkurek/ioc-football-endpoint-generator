@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   flexRender,
@@ -10,8 +9,8 @@ import {
 } from '@tanstack/react-table';
 import { buildColumns } from './columns';
 import { SortIndicator } from './SortIndicator';
+import { TableRow } from './TableRow';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
-import { routes } from '@/ui/routes';
 
 interface MatchesTableProps {
   entries: MatchEntry[];
@@ -35,7 +34,6 @@ export function MatchesTable({
   onSortingChange,
 }: MatchesTableProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const visibleCodes = useMemo(() => entries.map((e) => e.code), [entries]);
 
@@ -102,17 +100,7 @@ export function MatchesTable({
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              onClick={() => navigate(routes.matchDetail(row.original.code))}
-              className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900/60"
-            >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-3 py-2 align-middle">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
+            <TableRow key={row.id} row={row} />
           ))}
         </tbody>
       </table>

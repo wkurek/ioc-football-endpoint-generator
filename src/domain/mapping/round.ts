@@ -2,40 +2,35 @@ import type { SchSchedule } from '@/data/api/schemas';
 import { TranslatableError } from '@/domain/errors';
 
 /**
- * Computes the 1-based match number within a phase (CONVENTIONS.md #6).
+ * Returns the per-match number used to suffix `competition.round`
+ * (CONVENTIONS.md §5).
  *
- *   - Group stage: 1-6 per group (e.g. "Men's Group A — Match 1")
- *   - Quarter-finals: 1-4 (per gender)
- *   - Semi-finals: 1-2 (per gender)
- *   - Bronze/Gold: not used (a single match per gender)
+ * It's `unitNum` from SCH parsed as int — the same value the official
+ * Olympic schedule page (`stacy.olympics.com/en/paris-2024`) shows as
+ * "Match N". Cumulative across the whole tournament:
  *
- * Sorting key for determinism (CONVENTIONS.md #15): (startDate ASC, eventUnit.code ASC).
+ *   - Group stage: 1-24 (interleaved across all 4 groups by matchday)
+ *   - Quarter-finals: 25-28
+ *   - Semi-finals: 29-30
+ *   - Bronze: 31, Gold: 32 (per gender)
  *
- * @param allMatches — full list of HTEAM matches for the tournament.
- *                      Will be filtered to those sharing the same `eventUnit.longDescription`.
- * @param eventUnitCode — the match for which to compute the index.
- * @returns 1-based index, or 1 for medal matches (single-instance phases).
+ * A reviewer cross-referencing our `competition.round` against the page
+ * sees byte-identical labels.
+ *
+ * Throws on missing/non-numeric `unitNum` — defensive, not observed in
+ * the Paris 2024 corpus.
  */
-export function computeMatchNumberInPhase(
-  allMatches: readonly SchSchedule[],
-  eventUnitCode: string,
-): number {
-  const target = allMatches.find((m) => m.eventUnit.code === eventUnitCode);
-  if (!target) {
-    throw new TranslatableError('errors.round.noMatchWithCode', { code: eventUnitCode });
+export function parseUnitNum(sch: SchSchedule): number {
+  const raw = sch.unitNum;
+  if (!raw) {
+    throw new TranslatableError('errors.round.missingUnitNum', { code: sch.eventUnit.code });
   }
-  const samePhase = allMatches
-    .filter((m) => m.eventUnit.longDescription === target.eventUnit.longDescription)
-    .sort(matchSortComparator);
-  const idx = samePhase.findIndex((m) => m.eventUnit.code === eventUnitCode);
-  return idx + 1; // 1-based
-}
-
-/**
- * Default deterministic sort: (startDate ASC, eventUnit.code ASC).
- * CONVENTIONS.md #15.
- */
-export function matchSortComparator(a: SchSchedule, b: SchSchedule): number {
-  if (a.startDate !== b.startDate) return a.startDate < b.startDate ? -1 : 1;
-  return a.eventUnit.code < b.eventUnit.code ? -1 : 1;
+  const n = parseInt(raw, 10);
+  if (!Number.isFinite(n)) {
+    throw new TranslatableError('errors.round.invalidUnitNum', {
+      code: sch.eventUnit.code,
+      raw,
+    });
+  }
+  return n;
 }

@@ -42,6 +42,22 @@ describe('compareMatchSummary', () => {
     });
     expect(compareMatchSummary(a, b)).toBeLessThan(0);
   });
+
+  it('compares kickoffs by absolute time, not by string (mixed offsets)', () => {
+    // Same instant in time, different offsets: 14:00+01:00 === 15:00+02:00.
+    // Lex compare would order "14:00+01:00" before "15:00+02:00"; Date.parse
+    // sees them as equal and falls through to the code tie-breaker.
+    const earlierByLex = m({
+      eventUnitCode: 'B',
+      kickoff: '2024-07-24T14:00:00+01:00',
+    });
+    const equalAbsTime = m({
+      eventUnitCode: 'A',
+      kickoff: '2024-07-24T15:00:00+02:00',
+    });
+    // Tie on time → A before B by code.
+    expect(compareMatchSummary(equalAbsTime, earlierByLex)).toBeLessThan(0);
+  });
 });
 
 describe('sortMatchSummaries', () => {

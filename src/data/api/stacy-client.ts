@@ -9,7 +9,8 @@ import {
 } from './schemas';
 import { TranslatableError, type ErrorParams } from '@/domain/errors';
 
-const STACY_BASE_URL = 'https://stacy.olympics.com/OG2024/data';
+/** CDN base for Atos OG2024 data endpoints. Used by the bulk export to record provenance. */
+export const STACY_BASE_URL = 'https://stacy.olympics.com/OG2024/data';
 
 /** Fixed query-string segments shared by every Stacy endpoint we hit. */
 const STACY_QUERY = {

@@ -100,7 +100,7 @@ All parsing logic lives in [`src/domain/`](./src/domain/) as **pure functions** 
 This order is preserved in:
 - The default table view (re-sortable interactively, but resets to default per session).
 - The bulk export (`Download all` and `Download selected`) — JSON map keys preserve insertion order in modern JS engines, and we insert in the sort order.
-- The local match-number-in-phase derivation: e.g. "Men's Quarter-final 1" goes to whichever QF kicked off first chronologically, not the one with the lowest internal Atos code.
+- The match-number suffix in `competition.round` (e.g. `"Men's Group A — Match 17"`, `"Men's Quarter-final 27"`) — taken from SCH's `unitNum`, the same value the official Olympic schedule page renders as "Match N". A reviewer cross-referencing our output against the page sees the same labels.
 - The single-match export, where keys are written in `example.json`'s canonical order via an explicit canonicalizer (not via insertion order of the in-memory `Match` object) — output is byte-stable even if the TypeScript interface ever gets reordered.
 
 Same input → same output, every run (excluding the bulk wrapper's `generatedAt` timestamp — see below).
@@ -114,14 +114,21 @@ Same input → same output, every run (excluding the bulk wrapper's `generatedAt
     "__metadata__": {
       "generatedAt": "2026-05-10T12:34:56.000Z",
       "schemaVersion": "1.0.0",
-      "source": { "url": "https://stacy.olympics.com/en/paris-2024/competition-schedule" },
+      "source": {
+        "pageUrl": "https://stacy.olympics.com/en/paris-2024/competition-schedule",
+        "apiBase": "https://stacy.olympics.com/OG2024/data"
+      },
       "count": 58
     },
     "FBLM…GPA-000100--": { ...example.json shape },
     ...
   }
   ```
-  The key `__metadata__` uses double-underscore so it can't collide with an Atos `eventUnit.code` (which always starts with `FBL`). The metadata is **bulk-only** by design — single-match files stay free of any wrapper.
+  The key `__metadata__` uses double-underscore so it can't collide with an Atos `eventUnit.code` (which always starts with `FBL`). The metadata is **bulk-only** by design — single-match files stay free of any wrapper. `source.pageUrl` is the URL from ASSIGNMENT.md (the public-facing schedule page); `source.apiBase` is the CDN where the JSON is actually fetched from. Both are recorded so QA can audit provenance without guessing.
+
+  Consumers can validate the whole payload with the exported `BulkExportSchema` (Zod) from `src/domain/export/bulk.ts`.
+
+  **Key-order caveat:** `__metadata__` is the first key in the file thanks to JS insertion order. A consumer that re-serializes the parsed object with alphabetical key sorting will see `__metadata__` *last* (`_` is `0x5F`, after uppercase letters at `0x46+`). Our determinism guarantee is insertion order, not alphabetical.
 
 ---
 

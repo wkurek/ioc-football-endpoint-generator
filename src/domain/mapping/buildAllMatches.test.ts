@@ -7,7 +7,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildMatch } from './buildMatch';
 import {
   ByDisciplineH2HSchema,
@@ -16,7 +17,10 @@ import {
 } from '@/data/api/schemas';
 import { MatchSchema } from '@/domain/matchSchema';
 
-const FIXTURES = join(process.cwd(), 'test', 'fixtures');
+// Resolve fixtures relative to this file, not process.cwd() — keeps the test
+// stable when run from a parent directory (CI / monorepo).
+const HERE = dirname(fileURLToPath(import.meta.url));
+const FIXTURES = join(HERE, '..', '..', '..', 'test', 'fixtures');
 const RES_ALL_DIR = join(FIXTURES, 'res-all');
 
 const schedules: SchSchedule[] = (() => {
@@ -49,7 +53,7 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
       try {
         const resJson = JSON.parse(readFileSync(path, 'utf8'));
         const res = ResByRscH2HSchema.parse(resJson);
-        buildMatch({ sch, res, allMatches: schedules });
+        buildMatch({ sch, res });
         ok++;
       } catch (e) {
         errors.push({ code, error: e instanceof Error ? e.message : String(e) });
@@ -76,7 +80,7 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
       if (!existsSync(path)) continue;
       const resJson = JSON.parse(readFileSync(path, 'utf8'));
       const res = ResByRscH2HSchema.parse(resJson);
-      const match = buildMatch({ sch, res, allMatches: schedules });
+      const match = buildMatch({ sch, res });
       const expected = match.score.home + match.score.away;
       if (match.scorers.length !== expected) {
         mismatches.push({
@@ -103,7 +107,7 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
       if (!existsSync(path)) continue;
       const resJson = JSON.parse(readFileSync(path, 'utf8'));
       const res = ResByRscH2HSchema.parse(resJson);
-      const match = buildMatch({ sch, res, allMatches: schedules });
+      const match = buildMatch({ sch, res });
       const result = MatchSchema.safeParse(match);
       if (!result.success) {
         errors.push({

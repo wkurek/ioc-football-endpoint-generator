@@ -25,6 +25,17 @@ const KIND_CLASSES: Record<BannerKind, string> = {
     'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-200',
 };
 
+/**
+ * Per-kind ARIA role + live-region politeness. Errors and warnings need to
+ * interrupt screen-readers (assertive); status/info should not.
+ */
+const KIND_A11Y: Record<BannerKind, { role: 'status' | 'alert'; ariaLive: 'polite' | 'assertive' }> = {
+  [BannerKind.INFO]: { role: 'status', ariaLive: 'polite' },
+  [BannerKind.SUCCESS]: { role: 'status', ariaLive: 'polite' },
+  [BannerKind.WARN]: { role: 'alert', ariaLive: 'assertive' },
+  [BannerKind.ERROR]: { role: 'alert', ariaLive: 'assertive' },
+};
+
 const RETRY_BTN_CLASSES: Record<BannerKind, string> = {
   [BannerKind.INFO]:
     'border-slate-300 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800',
@@ -39,10 +50,11 @@ const RETRY_BTN_CLASSES: Record<BannerKind, string> = {
 export function Banner({ kind, icon: Icon, children, onRetry }: BannerProps) {
   const { t } = useTranslation();
   const spinning = kind === BannerKind.INFO;
+  const { role, ariaLive } = KIND_A11Y[kind];
   return (
     <div
-      role="status"
-      aria-live="polite"
+      role={role}
+      aria-live={ariaLive}
       className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm ${KIND_CLASSES[kind]}`}
     >
       <Icon

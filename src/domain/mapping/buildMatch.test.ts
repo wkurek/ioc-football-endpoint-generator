@@ -39,17 +39,18 @@ describe('buildMatch (integration with fixtures)', () => {
     expect(codes.size).toBe(58);
   });
 
-  it('builds ARG 1-2 MAR (Men\'s Group B — Match 1) end-to-end', () => {
+  it('builds ARG 1-2 MAR (Men\'s Group B — Match 3) end-to-end', () => {
     const code = 'FBLMTEAM11------------GPB-000100--';
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
     expect(match.competition).toEqual({
       name: 'Olympic Games',
       season: 'Paris 2024',
-      round: "Men's Group B — Match 1",
+      // unitNum=3 from the API — same numbering as the official page (CONVENTIONS §5).
+      round: "Men's Group B — Match 3",
     });
     expect(match.kickoff).toBe('2024-07-24T15:00:00+02:00');
     expect(match.status).toBe('FT');
@@ -86,7 +87,8 @@ describe('buildMatch (integration with fixtures)', () => {
     expect(match.lineups.away.startingXI).toHaveLength(11);
     expect(match.lineups.away.bench).toHaveLength(7);
 
-    // Position enum: only GK/CB/CM/FW
+    // Mapper currently emits only GK/CB/CM/FW (subset of the 11-value vocab —
+    // CONVENTIONS.md §3). The wider Position type accepts all 11.
     const allPositions = [
       ...match.lineups.home.startingXI,
       ...match.lineups.home.bench,
@@ -103,7 +105,7 @@ describe('buildMatch (integration with fixtures)', () => {
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
     expect(match.competition.round).toBe("Men's Gold Medal Match");
     // Spain led 1-3 at halftime (Lopez, Lopez, Baena vs Millot). 3-3 after 90, 3-5 in ET.
@@ -127,11 +129,11 @@ describe('buildMatch (integration with fixtures)', () => {
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
-    // EGY-PAR was the 3rd Men's QF chronologically (15:00 MAR-USA, 17:00 JPN-ESP, 19:00 EGY-PAR, 21:00 FRA-ARG).
-    // Match-number-in-phase is chronological per CONVENTIONS.md #6.
-    expect(match.competition.round).toBe("Men's Quarter-final 3");
+    // unitNum=27 in the source API. The Men's tournament uses a cumulative counter
+    // 1-32: group stage 1-24, QF 25-28, SF 29-30, Bronze 31, Gold 32.
+    expect(match.competition.round).toBe("Men's Quarter-final 27");
     // Score after regulation+ET (without PSO) — CONVENTIONS.md #8
     expect(match.score.home).toBe(1);
     expect(match.score.away).toBe(1);
@@ -149,7 +151,7 @@ describe('buildMatch (integration with fixtures)', () => {
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
     expect(match.competition.round).toBe("Men's Bronze Medal Match");
     expect(match.score.home + match.score.away).toBe(6);
@@ -161,7 +163,7 @@ describe('buildMatch (integration with fixtures)', () => {
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
     expect(match.competition.round).toBe("Women's Gold Medal Match");
     expect(match.teams.home).toBe('Brazil');
@@ -176,11 +178,10 @@ describe('buildMatch (integration with fixtures)', () => {
     const sch = allMatches.find((m) => m.eventUnit.code === code)!;
     const res = loadRes(code);
 
-    const match = buildMatch({ sch, res, allMatches });
+    const match = buildMatch({ sch, res });
 
-    // SF chronological order: 18:00 MAR-ESP (SFNL000200) → 21:00 FRA-EGY (SFNL000100).
-    // FRA-EGY is the 2nd SF chronologically — CONVENTIONS.md #6.
-    expect(match.competition.round).toBe("Men's Semi-final 2");
+    // unitNum=29. SF slots 29 + 30 in the cumulative Men's tournament counter.
+    expect(match.competition.round).toBe("Men's Semi-final 29");
     expect(match.score).toEqual({ home: 3, away: 1, halfTime: { home: 0, away: 0 } });
     expect(match.scorers.length).toBe(4);
   });

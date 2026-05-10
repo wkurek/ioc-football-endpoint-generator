@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportSingleAsJson } from './single';
-import { exportBulkAsJson, BULK_SCHEMA_VERSION } from './bulk';
+import { exportBulkAsJson, BULK_SCHEMA_VERSION, BulkExportSchema } from './bulk';
 import type { Match } from '@/domain/types';
 
 const fakeMatch = (override: Partial<Match> = {}): Match => ({
@@ -132,7 +132,7 @@ describe('exportBulkAsJson', () => {
     ]);
   });
 
-  it('__metadata__ has generatedAt, schemaVersion, source.url, count', () => {
+  it('__metadata__ has generatedAt, schemaVersion, source.{pageUrl,apiBase}, count', () => {
     const json = exportBulkAsJson(
       [
         { code: codeA, match: fakeMatch() },
@@ -140,16 +140,63 @@ describe('exportBulkAsJson', () => {
       ],
       {
         generatedAt: FIXED_TS,
-        sourceUrl: 'https://example.test/source',
+        pageUrl: 'https://example.test/page',
+        apiBase: 'https://example.test/api',
       },
     );
     const parsed = JSON.parse(json) as { __metadata__: unknown };
     expect(parsed.__metadata__).toEqual({
       generatedAt: FIXED_TS,
       schemaVersion: BULK_SCHEMA_VERSION,
-      source: { url: 'https://example.test/source' },
+      source: {
+        pageUrl: 'https://example.test/page',
+        apiBase: 'https://example.test/api',
+      },
       count: 2,
     });
+  });
+
+  it('default __metadata__.source URLs reference the official page and Stacy CDN', () => {
+    const json = exportBulkAsJson([{ code: codeA, match: fakeMatch() }], {
+      generatedAt: FIXED_TS,
+    });
+    const parsed = JSON.parse(json) as { __metadata__: { source: Record<string, string> } };
+    expect(parsed.__metadata__.source.pageUrl).toBe(
+      'https://stacy.olympics.com/en/paris-2024/competition-schedule',
+    );
+    expect(parsed.__metadata__.source.apiBase).toBe('https://stacy.olympics.com/OG2024/data');
+  });
+
+  it('BulkExportSchema round-trips its own output', () => {
+    const json = exportBulkAsJson(
+      [
+        { code: codeA, match: fakeMatch() },
+        { code: codeB, match: fakeMatch() },
+      ],
+      { generatedAt: FIXED_TS },
+    );
+    const parsed = JSON.parse(json);
+    const result = BulkExportSchema.safeParse(parsed);
+    if (!result.success) {
+      throw new Error(
+        result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '),
+      );
+    }
+    expect(result.success).toBe(true);
+  });
+
+  it('BulkExportSchema rejects payloads missing __metadata__', () => {
+    const result = BulkExportSchema.safeParse({ [codeA]: fakeMatch() });
+    expect(result.success).toBe(false);
+  });
+
+  it('BulkExportSchema rejects bad schemaVersion', () => {
+    const json = exportBulkAsJson([{ code: codeA, match: fakeMatch() }], {
+      generatedAt: FIXED_TS,
+    });
+    const parsed = JSON.parse(json) as { __metadata__: { schemaVersion: string } };
+    parsed.__metadata__.schemaVersion = 'not-semver';
+    expect(BulkExportSchema.safeParse(parsed).success).toBe(false);
   });
 
   it('throws on duplicate codes', () => {

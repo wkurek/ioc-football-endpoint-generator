@@ -44,12 +44,13 @@ export function canonicalizeMatch(m: Match): Match {
 }
 
 function canonicalizeScorer(s: Scorer): Scorer {
-  // `assist` stays optional — only emit the key when present (CONVENTIONS.md §4).
-  const out: Scorer = { team: s.team, player: s.player, minute: s.minute, type: s.type };
+  // `assist` is optional — only emit the key when present (CONVENTIONS.md §4).
+  // Two distinct object literals because key insertion order matters: the
+  // canonical example.json order is `team → player → minute → assist? → type`.
   if (s.assist !== undefined) {
     return { team: s.team, player: s.player, minute: s.minute, assist: s.assist, type: s.type };
   }
-  return out;
+  return { team: s.team, player: s.player, minute: s.minute, type: s.type };
 }
 
 function canonicalizeLineup(l: TeamLineup): TeamLineup {

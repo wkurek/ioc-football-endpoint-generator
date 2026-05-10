@@ -101,7 +101,7 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
       const resData = res.byCode[code];
       let summary: MatchSummary;
       try {
-        summary = buildMatchSummary({ sch, allMatches: allSchedules, res: resData });
+        summary = buildMatchSummary({ sch, res: resData });
       } catch (e) {
         summaryErrs.push({ code, error: e instanceof Error ? e : new Error(String(e)) });
         continue;
@@ -109,7 +109,7 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
       const entry: MatchEntry = { code, summary };
       if (resData) {
         try {
-          entry.match = buildMatch({ sch, res: resData, allMatches: allSchedules });
+          entry.match = buildMatch({ sch, res: resData });
         } catch (e) {
           entry.buildError = e instanceof Error ? e : new Error(String(e));
         }

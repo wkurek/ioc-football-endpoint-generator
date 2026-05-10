@@ -16,10 +16,6 @@ export function useSelection() {
     });
   }, []);
 
-  const replace = useCallback((codes: readonly string[]) => {
-    setSelected(new Set(codes));
-  }, []);
-
   const addMany = useCallback((codes: readonly string[]) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -36,12 +32,10 @@ export function useSelection() {
     });
   }, []);
 
-  const clear = useCallback(() => setSelected(new Set()), []);
-
   const has = useCallback((code: string) => selected.has(code), [selected]);
 
   return useMemo(
-    () => ({ selected, toggle, replace, addMany, removeMany, clear, has, count: selected.size }),
-    [selected, toggle, replace, addMany, removeMany, clear, has],
+    () => ({ selected, toggle, addMany, removeMany, has }),
+    [selected, toggle, addMany, removeMany, has],
   );
 }

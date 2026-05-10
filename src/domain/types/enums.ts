@@ -16,13 +16,25 @@ export const GoalType = {
 export type GoalType = (typeof GoalType)[keyof typeof GoalType];
 
 /**
- * 4-value subset of example.json's 11 position codes (CONVENTIONS.md #26).
- * Source schema (`PositionSchema`) accepts the full enum for forward-compat.
+ * Full position vocabulary from `example.json`. The mapper
+ * (`src/domain/mapping/position.ts`) currently emits only the 4-value subset
+ * `{GK, CB, CM, FW}` — see CONVENTIONS.md §3 for why granular Atos codes don't
+ * deterministically map to the granular roles. The type covers all 11 values
+ * so that:
+ *   1. `Position` matches `MatchSchema.PositionSchema` (single contract).
+ *   2. A future granular mapper can emit RB/LB/DM/AM/LW/RW/ST without a type change.
  */
 export const Position = {
   GK: 'GK',
+  RB: 'RB',
   CB: 'CB',
+  LB: 'LB',
+  DM: 'DM',
   CM: 'CM',
+  AM: 'AM',
+  LW: 'LW',
+  RW: 'RW',
+  ST: 'ST',
   FW: 'FW',
 } as const;
 export type Position = (typeof Position)[keyof typeof Position];

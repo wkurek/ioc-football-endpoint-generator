@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ActualResponseInputProps {
@@ -12,16 +13,17 @@ export function ActualResponseInput({
   parseError,
 }: ActualResponseInputProps) {
   const { t } = useTranslation();
+  const inputId = useId();
   return (
     <div className="flex flex-col gap-1">
       <label
-        htmlFor="compare-actual-input"
+        htmlFor={inputId}
         className="text-xs font-medium text-slate-600 dark:text-slate-400"
       >
         {t('compare.pasteActual')}
       </label>
       <textarea
-        id="compare-actual-input"
+        id={inputId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t('compare.pastePlaceholder')}
