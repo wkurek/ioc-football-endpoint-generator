@@ -21,10 +21,15 @@ export function StatusBanner({ state }: StatusBannerProps) {
     );
   }
 
-  if (state.h2hError) {
+  const h2hFailedCount = state.h2hErrors.length;
+  const h2hAllFailed = state.h2hTotal > 0 && h2hFailedCount === state.h2hTotal;
+
+  if (h2hAllFailed) {
+    const firstError = state.h2hErrors[0]?.error;
     return (
       <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={state.retry}>
-        {t('states.error')}: {state.h2hError.message}
+        {t('states.error')}
+        {firstError ? `: ${firstError.message}` : ''}
       </Banner>
     );
   }
@@ -53,14 +58,30 @@ export function StatusBanner({ state }: StatusBannerProps) {
     );
   }
 
-  const errorCount = state.matchErrors.length + state.summaryErrors.length;
-  if (errorCount > 0) {
-    const total = state.entries.length + state.summaryErrors.length;
-    const ok = state.entries.length - state.matchErrors.length;
+  // READY phase — surface any partial network failures + build errors as a single WARN.
+  const resFailedCount = state.resErrors.length;
+  const buildErrorCount = state.matchErrors.length + state.summaryErrors.length;
+  const hasAnyError = h2hFailedCount > 0 || resFailedCount > 0 || buildErrorCount > 0;
+
+  if (hasAnyError) {
+    const parts: string[] = [];
+    if (h2hFailedCount > 0) {
+      parts.push(t('states.h2hPartial', { failed: h2hFailedCount, total: state.h2hTotal }));
+    }
+    if (resFailedCount > 0) {
+      parts.push(t('states.resPartial', { failed: resFailedCount }));
+    }
+    if (buildErrorCount > 0) {
+      parts.push(t('states.buildErrors', { count: buildErrorCount }));
+    }
+    const canRetry = h2hFailedCount > 0 || resFailedCount > 0;
     return (
-      <Banner kind={BannerKind.WARN} icon={AlertTriangle}>
-        {ok} / {total} {t('states.ready')} · {errorCount} build error
-        {errorCount === 1 ? '' : 's'}
+      <Banner
+        kind={BannerKind.WARN}
+        icon={AlertTriangle}
+        onRetry={canRetry ? state.retry : undefined}
+      >
+        {state.entries.length} {t('states.ready')} · {parts.join(' · ')}
       </Banner>
     );
   }

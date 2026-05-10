@@ -21,6 +21,8 @@ export interface MatchEntry {
   match?: Match;
   /** populated when buildMatch threw for this code (CONVENTIONS.md #27) */
   buildError?: Error;
+  /** populated when the RES network request for this code failed */
+  resError?: Error;
 }
 
 export interface PipelineState {
@@ -40,7 +42,10 @@ export interface PipelineState {
   resLoaded: number;
   resTotal: number;
   daysError?: Error;
-  h2hError?: Error;
+  /** Per-date H2H fetch failures. Empty if every date succeeded. */
+  h2hErrors: Array<{ date: string; error: Error }>;
+  /** Per-code RES fetch failures. Empty if every match RES succeeded. */
+  resErrors: Array<{ code: string; error: Error }>;
   matchErrors: Array<{ code: string; error: Error }>;
   /**
    * Matches whose `buildMatchSummary` threw (e.g. unsupported `status.code`,
@@ -49,10 +54,16 @@ export interface PipelineState {
    */
   summaryErrors: Array<{ code: string; error: Error }>;
   /**
-   * Re-runs the entire SCH→H2H→RES pipeline by invalidating all cached
-   * queries. Used by the Retry button on error banners.
+   * Re-fetches only the queries that errored (days + failed H2H dates +
+   * failed RES codes). Successful queries stay in cache. Used by the
+   * Retry button on error/warning banners.
    */
   retry: () => void;
+  /**
+   * Re-fetches RES for a single match. Used by the Retry button on the
+   * detail page when a specific match's RES request failed.
+   */
+  retryMatch: (eventUnitCode: string) => void;
 }
 
 interface PipelineOptions {
@@ -102,12 +113,15 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
         } catch (e) {
           entry.buildError = e instanceof Error ? e : new Error(String(e));
         }
+      } else {
+        const resErr = res.errorByCode[code];
+        if (resErr) entry.resError = resErr;
       }
       built.push(entry);
     }
     built.sort((a, b) => compareMatchSummary(a.summary, b.summary));
     return { entries: built, summaryErrors: summaryErrs };
-  }, [allSchedules, res.byCode]);
+  }, [allSchedules, res.byCode, res.errorByCode]);
 
   const matchErrors = useMemo(
     () =>
@@ -125,9 +139,28 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     else if (allSchedules.length > 0) phase = PipelinePhase.READY;
   }
 
+  const daysIsError = daysQuery.isError;
+  const h2hFailedKey = h2h.failedDates.join(',');
+  const resFailedKey = res.failedCodes.join(',');
+
   const retry = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.all });
-  }, [queryClient]);
+    if (daysIsError) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.days() });
+    }
+    for (const date of h2hFailedKey ? h2hFailedKey.split(',') : []) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.h2hByDate(date) });
+    }
+    for (const code of resFailedKey ? resFailedKey.split(',') : []) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.resByCode(code) });
+    }
+  }, [queryClient, daysIsError, h2hFailedKey, resFailedKey]);
+
+  const retryMatch = useCallback(
+    (eventUnitCode: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.resByCode(eventUnitCode) });
+    },
+    [queryClient],
+  );
 
   return {
     phase,
@@ -140,9 +173,11 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     resLoaded: res.loadedCount,
     resTotal: res.totalCount,
     daysError: daysQuery.error ?? undefined,
-    h2hError: h2h.errors[0],
+    h2hErrors: h2h.errors,
+    resErrors: res.errors,
     matchErrors,
     summaryErrors,
     retry,
+    retryMatch,
   };
 }

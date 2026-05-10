@@ -30,19 +30,29 @@ export function useResForCodes(eventUnitCodes: readonly string[]) {
   const isLoading = results.some((r) => r.isLoading);
   const loadedCount = results.filter((r) => r.isSuccess).length;
   const totalCount = results.length;
-  const errors = results.map((r) => r.error).filter((e): e is Error => e instanceof Error);
 
   // Pair each code with its result so callers can build matches in a stable order.
   const byCode: Record<string, ResByRscH2H | undefined> = {};
+  const errorByCode: Record<string, Error | undefined> = {};
+  const errors: Array<{ code: string; error: Error }> = [];
+  const failedCodes: string[] = [];
   eventUnitCodes.forEach((code, i) => {
-    byCode[code] = results[i]?.data;
+    const r = results[i];
+    byCode[code] = r?.data;
+    if (r?.isError && r.error instanceof Error) {
+      errorByCode[code] = r.error;
+      errors.push({ code, error: r.error });
+      failedCodes.push(code);
+    }
   });
 
   return {
     byCode,
+    errorByCode,
     isLoading,
     loadedCount,
     totalCount,
     errors,
+    failedCodes,
   };
 }

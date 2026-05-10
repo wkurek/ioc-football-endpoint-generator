@@ -72,7 +72,11 @@
     "ready": "Ready",
     "error": "Something went wrong",
     "errorRetry": "Retry",
-    "empty": "No data yet"
+    "empty": "No data yet",
+    "h2hPartial": "{{failed}} of {{total}} match-day requests failed",
+    "resPartial": "{{failed}} match endpoint(s) failed to load",
+    "buildErrors": "{{count}} build error(s)",
+    "matchResError": "Failed to load match data: {{error}}"
   },
   "match": {
     "tabs": {

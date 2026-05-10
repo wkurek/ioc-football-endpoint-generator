@@ -15,6 +15,7 @@ export function MatchDetailPage() {
   const { t } = useTranslation();
   const { enabled, setEnabled, pipeline } = useMatchesState();
   const retry = pipeline.retry;
+  const retryMatch = pipeline.retryMatch;
 
   // Auto-load if user lands here via deep-link without first visiting /.
   useEffect(() => {
@@ -55,7 +56,17 @@ export function MatchDetailPage() {
         </Banner>
       )}
 
-      {entry && !entry.match && !entry.buildError && (
+      {entry && entry.resError && (
+        <Banner
+          kind={BannerKind.ERROR}
+          icon={AlertTriangle}
+          onRetry={() => retryMatch(entry.code)}
+        >
+          {t('states.matchResError', { error: entry.resError.message })}
+        </Banner>
+      )}
+
+      {entry && !entry.match && !entry.buildError && !entry.resError && (
         <Banner kind={BannerKind.INFO} icon={Loader2}>
           {t('states.loadingRes', { loaded: pipeline.resLoaded, total: pipeline.resTotal })}
         </Banner>

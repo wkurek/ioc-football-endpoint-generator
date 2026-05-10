@@ -16,8 +16,18 @@ export function useH2HForDates(dates: readonly string[]) {
   });
 
   const isLoading = results.some((r) => r.isLoading);
-  const isError = results.some((r) => r.isError);
-  const errors = results.map((r) => r.error).filter((e): e is Error => e instanceof Error);
+  const errors: Array<{ date: string; error: Error }> = [];
+  const failedDates: string[] = [];
+  results.forEach((r, i) => {
+    if (r.isError && r.error instanceof Error) {
+      const date = dates[i];
+      if (date !== undefined) {
+        errors.push({ date, error: r.error });
+        failedDates.push(date);
+      }
+    }
+  });
+  const isError = errors.length > 0;
   const loadedCount = results.filter((r) => r.isSuccess).length;
   const totalCount = results.length;
 
@@ -30,6 +40,7 @@ export function useH2HForDates(dates: readonly string[]) {
     isLoading,
     isError,
     errors,
+    failedDates,
     loadedCount,
     totalCount,
   };
