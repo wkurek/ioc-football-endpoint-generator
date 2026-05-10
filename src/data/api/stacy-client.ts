@@ -47,7 +47,18 @@ async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T> {
     );
   }
 
-  const json = (await res.json()) as unknown;
+  // Read as text + parse manually so a 200 with a non-JSON body (e.g. a CDN
+  // redirect/404 page returning HTML) surfaces as a precise StacyApiError
+  // instead of a raw SyntaxError from `res.json()`.
+  const text = await res.text();
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    const preview = text.slice(0, 80).replace(/\s+/g, ' ').trim();
+    throw new StacyApiError('errors.stacy.invalidJson', { preview }, res.status, url);
+  }
+
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
     const detail = parsed.error.issues

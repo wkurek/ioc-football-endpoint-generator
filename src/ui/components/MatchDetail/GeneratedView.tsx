@@ -20,9 +20,19 @@ export function GeneratedView({ match, eventUnitCode }: GeneratedViewProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ColorizeToggle checked={colorize} onChange={setColorize} />
-        {colorize && <SourceLegend schUrl={schUrl} resUrl={resUrl} />}
+      {/* Toggle and legend live in distinct rows that always exist — the
+          legend is a permanent colour key (and source-URL reference) so
+          toggling `colorize` never shifts the toggle or the JSON below. */}
+      <ColorizeToggle checked={colorize} onChange={setColorize} />
+      <div
+        className={
+          colorize
+            ? 'transition-opacity'
+            : 'pointer-events-none opacity-60 transition-opacity'
+        }
+        aria-hidden={!colorize}
+      >
+        <SourceLegend schUrl={schUrl} resUrl={resUrl} />
       </div>
       <pre
         className="overflow-x-auto rounded-md border border-slate-200 py-2 font-mono text-xs leading-6 dark:border-slate-800"

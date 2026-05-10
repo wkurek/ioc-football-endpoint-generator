@@ -12,8 +12,9 @@ interface StatusBannerProps {
 export function StatusBanner({ state }: StatusBannerProps) {
   const { t } = useTranslation();
 
-  if (state.phase === PipelinePhase.IDLE) return null;
-
+  // Error checks first — when every query in a layer fails, the pipeline falls
+  // back to `phase=IDLE` (nothing loading, nothing succeeded). The IDLE early-
+  // return below would otherwise hide the failure and show a blank page.
   if (state.daysError) {
     return (
       <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={state.retry}>
@@ -34,6 +35,8 @@ export function StatusBanner({ state }: StatusBannerProps) {
       </Banner>
     );
   }
+
+  if (state.phase === PipelinePhase.IDLE) return null;
 
   if (state.phase === PipelinePhase.DAYS) {
     return (

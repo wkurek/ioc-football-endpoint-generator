@@ -130,7 +130,8 @@
     },
     "stacy": {
       "http": "HTTP {{status}} {{statusText}}",
-      "schema": "Schema validation failed: {{detail}}"
+      "schema": "Schema validation failed: {{detail}}",
+      "invalidJson": "Endpoint returned a non-JSON response (preview: \"{{preview}}…\")"
     },
     "compare": {
       "fetchHttp": "HTTP {{status}} {{statusText}}",

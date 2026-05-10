@@ -198,7 +198,11 @@ export function MatchSelector({ entries, value, onChange }: MatchSelectorProps) 
           onFocus={() => setOpen(true)}
           onKeyDown={onInputKeyDown}
           placeholder={selected ? formatLabel(selected) : t('compare.searchPlaceholder')}
-          className="w-full rounded-md border border-slate-200 bg-white py-1 pl-8 pr-2 text-sm dark:border-slate-700 dark:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className={`w-full rounded-md border border-slate-200 bg-white py-1 pl-8 pr-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 ${
+            selected
+              ? 'placeholder:font-medium placeholder:text-slate-900 dark:placeholder:text-slate-100'
+              : 'placeholder:text-slate-400 dark:placeholder:text-slate-500'
+          }`}
         />
       </div>
       <span aria-live="polite" className="sr-only">
