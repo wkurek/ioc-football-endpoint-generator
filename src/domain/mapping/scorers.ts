@@ -1,5 +1,5 @@
 import type { Scorer, GoalType } from '@/domain/types';
-import type { ResByRscH2H, ResTeamItemT } from '@/data/api/schemas';
+import type { ResByRscH2H, ResPbpaActionT, ResTeamItemT } from '@/data/api/schemas';
 import { formatPersonName } from './name';
 
 /**
@@ -7,17 +7,21 @@ import { formatPersonName } from './name';
  *
  * Algorithm:
  *   1. Iterate over `playByPlay[].actions[]`.
- *   2. For each action, look at `competitors[].athletes[]` for `pbpat_role === "SCR"`.
+ *   2. Skip PSO actions entirely (CONVENTIONS.md #7).
+ *   3. `pbpa_Action === "OG"` (own goal) takes a dedicated branch — the player
+ *      is on his OWN team in `competitors[]` (no `SCR` role) but the goal is
+ *      credited to the opposing team. See `buildOwnGoalScorer` below.
+ *   4. Otherwise look at `competitors[].athletes[]` for `pbpat_role === "SCR"`.
  *      The owning competitor's `pbpc_code` gives the scoring team.
- *   3. Skip PSO actions entirely (CONVENTIONS.md #7).
- *   4. Skip actions whose `pbpa_When` doesn't match `^\d+'(?: ?\+\d+)?$` (defensive).
- *   5. Type:
+ *   5. Skip actions whose `pbpa_When` doesn't match `^\d+'(?: ?\+\d+)?$` (defensive).
+ *   6. Type:
  *      - `pbpa_Action === "PEN"` (and not PSO) → "penalty"
- *      - everything else → "open_play"
+ *      - `OG` and everything else → "open_play"
  *      (header undetectable in source — CONVENTIONS.md #10)
- *   6. Assist: if same competitor's athletes contains `pbpat_role === "ASSIST"`,
- *      include `assist`; otherwise omit the key (CONVENTIONS.md #29).
- *   7. Sort by `minute` ASC, tie-break by source `pbpa_order` (chronological).
+ *   7. Assist: if same competitor's athletes contains `pbpat_role === "ASSIST"`,
+ *      include `assist`; otherwise omit the key (CONVENTIONS.md #29). OG never
+ *      carries an assist.
+ *   8. Sort by `minute` ASC, tie-break by source `pbpa_order` (chronological).
  */
 export function buildScorers(res: ResByRscH2H): Scorer[] {
   // Build team helpers: pbpc_code → name + bib → player name.
@@ -31,8 +35,19 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
     for (const action of block.actions) {
       if (action.pbpa_period === 'PSO') continue;
 
-      // Find the scoring competitor (the one whose athletes[] has SCR).
       const competitors = action.competitors ?? [];
+
+      // Own goal (CONVENTIONS.md #11): API marks it with pbpa_Action === "OG",
+      // lists the player on his OWN team in competitors[] (no "SCR" role) and
+      // moves the score to the opposing side. Per FIFA convention we credit the
+      // goal to the beneficiary (opposing) team while keeping the player's name.
+      if (action.pbpa_Action === 'OG') {
+        const ogScorer = buildOwnGoalScorer(action, teamsMeta);
+        if (ogScorer) collected.push(ogScorer);
+        continue;
+      }
+
+      // Find the scoring competitor (the one whose athletes[] has SCR).
       const scoringComp = competitors.find((c) =>
         (c.athletes ?? []).some((a) => a.pbpat_role === 'SCR'),
       );
@@ -103,6 +118,57 @@ function buildTeamMeta(items: ResTeamItemT[]): TeamsMeta {
     };
   }
   return { byTeamCode };
+}
+
+/**
+ * Maps an `OG` (own goal) action to a scorer entry. The API attaches the
+ * player to his OWN team in `competitors[]` (without an `SCR` role), while the
+ * goal counts for the opposing side (visible in `pbpa_ScoreH/A`). Per FIFA
+ * convention we keep the player's name and credit the goal to the opposing
+ * team. Returns `null` when the action is unattributable (no athlete recorded
+ * or unparseable minute) so the caller can skip it.
+ */
+function buildOwnGoalScorer(
+  action: ResPbpaActionT,
+  teamsMeta: TeamsMeta,
+): (Scorer & { _order: number }) | null {
+  const ownComp = action.competitors?.[0];
+  if (!ownComp) return null;
+  const ownAthlete = ownComp.athletes?.[0];
+  if (!ownAthlete) return null;
+
+  const ownTeam = teamsMeta.byTeamCode[ownComp.pbpc_code];
+  if (!ownTeam) {
+    throw new Error(
+      `buildScorers: unknown OG pbpc_code "${ownComp.pbpc_code}" — not present in items[]`,
+    );
+  }
+  const scorerName = ownTeam.bibToName[ownAthlete.pbpat_bib];
+  if (!scorerName) {
+    throw new Error(
+      `buildScorers: OG scorer bib "${ownAthlete.pbpat_bib}" not in team "${ownTeam.name}" roster`,
+    );
+  }
+
+  const beneficiaryEntry = Object.entries(teamsMeta.byTeamCode).find(
+    ([code]) => code !== ownComp.pbpc_code,
+  );
+  if (!beneficiaryEntry) {
+    throw new Error(
+      `buildScorers: cannot find opposing team for OG by ${scorerName} (only one team in items[])`,
+    );
+  }
+
+  const minute = parseMinute(action.pbpa_When);
+  if (minute === null) return null;
+
+  return {
+    team: beneficiaryEntry[1].name,
+    player: scorerName,
+    minute,
+    type: 'open_play',
+    _order: action.pbpa_order,
+  };
 }
 
 /**

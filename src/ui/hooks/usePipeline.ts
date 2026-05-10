@@ -40,6 +40,12 @@ export interface PipelineState {
   h2hError?: Error;
   matchErrors: Array<{ code: string; error: Error }>;
   /**
+   * Matches whose `buildMatchSummary` threw (e.g. unsupported `status.code`,
+   * unrecognised `eventUnit.code`). These are excluded from `entries`
+   * entirely — without a summary there's nothing to render in the table.
+   */
+  summaryErrors: Array<{ code: string; error: Error }>;
+  /**
    * Re-runs the entire SCH→H2H→RES pipeline by invalidating all cached
    * queries. Used by the Retry button on error banners.
    */
@@ -69,12 +75,23 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
   );
   const res = useResForCodes(codes);
 
-  const entries = useMemo<MatchEntry[]>(() => {
-    if (allSchedules.length === 0) return [];
-    const built: MatchEntry[] = allSchedules.map((sch) => {
+  const { entries, summaryErrors } = useMemo<{
+    entries: MatchEntry[];
+    summaryErrors: Array<{ code: string; error: Error }>;
+  }>(() => {
+    if (allSchedules.length === 0) return { entries: [], summaryErrors: [] };
+    const built: MatchEntry[] = [];
+    const summaryErrs: Array<{ code: string; error: Error }> = [];
+    for (const sch of allSchedules) {
       const code = sch.eventUnit.code;
       const resData = res.byCode[code];
-      const summary = buildMatchSummary({ sch, allMatches: allSchedules, res: resData });
+      let summary: MatchSummary;
+      try {
+        summary = buildMatchSummary({ sch, allMatches: allSchedules, res: resData });
+      } catch (e) {
+        summaryErrs.push({ code, error: e instanceof Error ? e : new Error(String(e)) });
+        continue;
+      }
       const entry: MatchEntry = { code, summary };
       if (resData) {
         try {
@@ -83,9 +100,10 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
           entry.buildError = e instanceof Error ? e : new Error(String(e));
         }
       }
-      return entry;
-    });
-    return [...built].sort((a, b) => compareMatchSummary(a.summary, b.summary));
+      built.push(entry);
+    }
+    built.sort((a, b) => compareMatchSummary(a.summary, b.summary));
+    return { entries: built, summaryErrors: summaryErrs };
   }, [allSchedules, res.byCode]);
 
   const matchErrors = useMemo(
@@ -121,6 +139,7 @@ export function usePipeline(options: PipelineOptions = {}): PipelineState {
     daysError: daysQuery.error ?? undefined,
     h2hError: h2h.errors[0],
     matchErrors,
+    summaryErrors,
     retry,
   };
 }

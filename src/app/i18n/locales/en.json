@@ -118,7 +118,7 @@
     "splitView": "Split",
     "unifiedView": "Unified",
     "identical": "✓ Identical — no differences",
-    "summary": "+{{added}} −{{removed}}, {{unchanged}} unchanged",
+    "summary": "+{{added}} -{{removed}}, {{unchanged}} unchanged",
     "invalidJson": "Invalid JSON: {{error}}"
   },
   "theme": {

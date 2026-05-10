@@ -6,14 +6,14 @@ describe('mapStatus', () => {
     expect(mapStatus('FINISHED')).toBe('FT');
   });
 
-  it.each(['SCHEDULED', 'LIVE', 'POSTPONED', 'CANCELLED', 'RESCHEDULED', 'ABANDONED'])(
-    'passes through %s as-is',
+  it.each(['SCHEDULED', 'LIVE', 'POSTPONED', 'CANCELLED', 'RESCHEDULED', 'ABANDONED', ''])(
+    'throws on unsupported code %j',
     (code) => {
-      expect(mapStatus(code)).toBe(code);
+      expect(() => mapStatus(code)).toThrow(/unsupported status\.code/);
     },
   );
 
-  it('passes through unknown codes (defensive)', () => {
-    expect(mapStatus('SOME_NEW_CODE')).toBe('SOME_NEW_CODE');
+  it('throws on unknown codes (defensive)', () => {
+    expect(() => mapStatus('SOME_NEW_CODE')).toThrow(/unsupported status\.code/);
   });
 });

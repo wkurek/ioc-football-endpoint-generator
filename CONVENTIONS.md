@@ -171,9 +171,18 @@ Jeden gol z FRD obserwowany (Alex Baena vs France w finale Gold). `example.json`
 
 **Decyzja: A — `"open_play"`.** Forced przez pyt. 1 = A.
 
+### 11a. Samobóje — `pbpa_Action: "OG"` ✅
+
+W danych OG2024 są 4 samobóje w 3 meczach (Mali-ISR M GroupD; ZAM-? W GroupB; ESP-BRA W SF — dwa). API oznacza je inaczej niż zwykłe gole: w `competitors[]` jest tylko **jedna drużyna — drużyna własna strzelca**, athlete nie ma `pbpat_role: "SCR"`, a punkt w `pbpa_ScoreH/A` idzie do drużyny **przeciwnej**.
+
+**Decyzja: dodajemy do `scorers[]` z drużyną-beneficjentem i typem `"open_play"`.** Zgodnie z konwencją FIFA: zawodnik jest wymieniony jako autor gola, ale gol jest zaliczony drużynie przeciwnej (`team` w outpucie = drużyna przeciwna do tej w `competitors[].pbpc_code`). `assist` nigdy nie towarzyszy OG-bramce.
+
+**Uzasadnienie:** Schemat `example.json` nie dopuszcza `"own_goal"` w enumie `Scorer.type`, a samobój **jest** golem zaliczonym do wyniku — pominięcie go (jak PSO) gubiłoby strzelca dla 4/58 meczów. `"open_play"` to akceptowalna utrata informacji o "rodzaju" przy zachowaniu pełnej atrybucji "kto i kiedy" — kompromis ten sam co przy `FRD`.
+
 **Mapping `scorers[].type` (finalny):**
 - `pbpa_Action === "PEN"` AND `pbpa_period !== "PSO"` → `"penalty"`
 - `pbpa_period === "PSO"` → bramka pomijana (pyt. 7)
+- `pbpa_Action === "OG"` → `"open_play"`, `team` = drużyna przeciwna (pyt. 11a)
 - wszystko inne (`SHOT`, `FRD`, ewentualne inne) → `"open_play"`
 
 ---
@@ -182,13 +191,13 @@ Jeden gol z FRD obserwowany (Alex Baena vs France w finale Gold). `example.json`
 
 W danych OG2024 wszystkie 58 meczów ma `status.code === "FINISHED"`.
 
-**Decyzja: A — `FINISHED → "FT"`, reszta passthrough.** Minimalny mapping:
+**Decyzja: `FINISHED → "FT"`, każdy inny kod → throw (defensywnie, per #27).** Minimalny mapping:
 ```
 status.code === "FINISHED" → "FT"
-inne → status.code (raw, np. "SCHEDULED")
+inne → throw Error("unsupported status.code …")
 ```
 
-**Uzasadnienie:** Dla obecnych danych funkcjonalnie wystarcza. Jest też najmniej inwazyjne — gdyby kiedykolwiek dane się rozszerzyły, expected response zachowuje surową wartość zamiast forsować mapping wymyślony arbitralnie.
+**Uzasadnienie:** OG2024 to zamknięte archiwum historyczne (58/58 meczów FINISHED), a `example.json` specyfikuje wyłącznie wartość `"FT"`. Nie znamy reszty taksonomii statusów, więc raw passthrough wprowadzałby do outputu wartości spoza kontraktu (`"SCHEDULED"`, `"LIVE"` itd.) bez żadnej walidacji. Throw zatrzymuje pipeline na pojedynczym meczu, błąd jest wyłapywany przez `usePipeline` jako `matchErrors` i pokazany w UI — zgodnie z #27 reviewer od razu widzi, że pojawił się nieznany kod do rozpatrzenia jednostkowo.
 
 ---
 

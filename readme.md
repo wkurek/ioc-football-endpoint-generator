@@ -121,7 +121,7 @@ We follow `example.json` schema strictly. Where the OG2024 source doesn't provid
 
 5. **Constant fields.** `competition.name = "Olympic Games"` and `competition.season = "Paris 2024"` are not derivable from a single API field — we set them as constants. The Men's / Women's distinction lives in `competition.round` (e.g. `"Men's Group A — Match 1"`, `"Women's Quarter-final 3"`).
 
-6. **Status mapping.** `FINISHED → "FT"`. Other statuses pass through raw. All 58 Paris 2024 matches have `FINISHED` status, so this is mostly defensive.
+6. **Status mapping.** `FINISHED → "FT"`. Any other code throws — `example.json` only specifies `"FT"` and OG2024 is a closed archive (58/58 FINISHED), so an unknown code is a schema surprise that should surface as a per-match error rather than silently leaking through (CONVENTIONS.md §12, §27).
 
 7. **Defensive errors.** If a match has `FINISHED` status but its `RES_ByRSC_H2H` is missing fields we depend on (e.g. `result.periods[TOT]`), the mapper throws with a precise error and the UI shows "X / 58 generated, Y errors" so the reviewer can see exactly what failed (CONVENTIONS.md §27). On the live archive nothing currently fails.
 

@@ -8,7 +8,9 @@
       "Bash(cp /tmp/fbl-events.json \"c:/Projects/ioc/.tmp-fbl-events.json\")",
       "Bash(mkdir -p \"c:/Projects/ioc/.tmp-data/h2h\" \"c:/Projects/ioc/.tmp-data/res\" *)",
       "Bash(node \"c:/Projects/ioc/.tmp-data/analyze-h2h.mjs\")",
-      "Bash(node \"c:/Projects/ioc/.tmp-data/analyze-positions.mjs\")"
+      "Bash(node \"c:/Projects/ioc/.tmp-data/analyze-positions.mjs\")",
+      "Bash(npx vitest *)",
+      "Bash(node -e ' *)"
     ],
     "additionalDirectories": [
       "\\tmp",

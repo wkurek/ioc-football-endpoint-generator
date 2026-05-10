@@ -68,7 +68,7 @@ export interface Match {
   venue: Venue;
   /** ISO 8601 with timezone, preserved as-is (CONVENTIONS.md #17). */
   kickoff: string;
-  /** "FT" for FINISHED; raw passthrough otherwise (CONVENTIONS.md #12). */
+  /** Always "FT" — only FINISHED is mapped, other codes throw (CONVENTIONS.md #12). */
   status: string;
   teams: Teams;
   score: Score;

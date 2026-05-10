@@ -52,12 +52,14 @@ export function StatusBanner({ state }: StatusBannerProps) {
     );
   }
 
-  if (state.matchErrors.length > 0) {
+  const errorCount = state.matchErrors.length + state.summaryErrors.length;
+  if (errorCount > 0) {
+    const total = state.entries.length + state.summaryErrors.length;
+    const ok = state.entries.length - state.matchErrors.length;
     return (
       <Banner kind="warn" icon={AlertTriangle}>
-        {state.entries.length - state.matchErrors.length} / {state.entries.length}{' '}
-        {t('states.ready')} · {state.matchErrors.length} build error
-        {state.matchErrors.length === 1 ? '' : 's'}
+        {ok} / {total} {t('states.ready')} · {errorCount} build error
+        {errorCount === 1 ? '' : 's'}
       </Banner>
     );
   }
