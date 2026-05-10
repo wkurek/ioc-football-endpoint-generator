@@ -12,7 +12,7 @@ interface GeneratedViewProps {
 }
 
 export function GeneratedView({ match, eventUnitCode }: GeneratedViewProps) {
-  const [colorize, setColorize] = useState(false);
+  const [colorize, setColorize] = useState(true);
   const lines = useMemo(() => buildJsonLines(match), [match]);
 
   const schUrl = useMemo(() => urlForH2HOnDate(match.kickoff.slice(0, 10)), [match.kickoff]);

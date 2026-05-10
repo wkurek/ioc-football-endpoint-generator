@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "OG2024 Football Endpoint Generator",
+    "title": "Paris 2024 Football Endpoints",
     "subtitle": "Paris 2024 expected API responses for FootyScores tests"
   },
   "nav": {
@@ -172,9 +172,9 @@
     "selected": "Selected",
     "noResults": "No matches found.",
     "resultsAnnouncement": "{{count}} matches found",
-    "pasteActual": "Paste actual API response (JSON)",
+    "pasteActual": "Or paste actual API response (JSON)",
     "pastePlaceholder": "Paste JSON here…",
-    "fetchUrl": "Or fetch from URL",
+    "fetchUrl": "Fetch from URL",
     "fetchUrlPlaceholder": "https://api.example.com/match/...",
     "fetch": "Fetch",
     "fetchFailed": "Fetch failed: {{error}}",
