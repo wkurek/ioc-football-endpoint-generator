@@ -5,6 +5,7 @@ import { ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
 import { useMatchesState } from '@/ui/state/MatchesStateProvider';
 import { BannerKind, PipelinePhase } from '@/ui/types';
 import { Banner } from '@/ui/components/Banner';
+import { routes } from '@/ui/routes';
 import { MatchHeader } from '@/ui/components/MatchDetail/MatchHeader';
 import { MatchTabs } from '@/ui/components/MatchDetail/MatchTabs';
 import { MatchActions } from '@/ui/components/MatchDetail/MatchActions';
@@ -27,7 +28,7 @@ export function MatchDetailPage() {
   return (
     <div className="space-y-4">
       <Link
-        to="/"
+        to={routes.matches()}
         className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />

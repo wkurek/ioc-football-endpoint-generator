@@ -1,11 +1,14 @@
 import { useCallback } from 'react';
+import { OBJECT_URL_REVOKE_DELAY_MS } from '@/ui/timing';
+
+const DEFAULT_MIME = 'application/json';
 
 /**
  * Triggers a browser download for a string payload.
  * Used for `Download single` / `Download selected` / `Download all`.
  */
 export function useDownload() {
-  return useCallback((filename: string, content: string, mime = 'application/json') => {
+  return useCallback((filename: string, content: string, mime = DEFAULT_MIME) => {
     const blob = new Blob([content], { type: `${mime};charset=utf-8` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -16,6 +19,6 @@ export function useDownload() {
     a.click();
     document.body.removeChild(a);
     // Defer revoke so the download can start.
-    setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    setTimeout(() => URL.revokeObjectURL(url), OBJECT_URL_REVOKE_DELAY_MS);
   }, []);
 }

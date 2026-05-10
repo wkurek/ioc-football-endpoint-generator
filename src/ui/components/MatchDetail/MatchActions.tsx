@@ -8,6 +8,7 @@ import { useDownload } from '@/ui/hooks/useDownload';
 import { useCopyToClipboard } from '@/ui/hooks/useCopyToClipboard';
 import { PrimaryButton } from '@/ui/components/PrimaryButton';
 import { SecondaryButton } from '@/ui/components/SecondaryButton';
+import { routes } from '@/ui/routes';
 
 interface MatchActionsProps {
   code: string;
@@ -32,7 +33,7 @@ export function MatchActions({ code, match }: MatchActionsProps) {
         <Copy className="h-4 w-4" aria-hidden="true" />
         {t('actions.copyAll')}
       </SecondaryButton>
-      <SecondaryButton onClick={() => navigate(`/compare/${encodeURIComponent(code)}`)}>
+      <SecondaryButton onClick={() => navigate(routes.compareWithMatch(code))}>
         <GitCompare className="h-4 w-4" aria-hidden="true" />
         {t('actions.compareThisMatch')}
       </SecondaryButton>

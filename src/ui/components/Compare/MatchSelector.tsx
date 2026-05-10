@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Check, Search } from 'lucide-react';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
+import { routes } from '@/ui/routes';
 
 interface MatchSelectorProps {
   entries: MatchEntry[];
@@ -53,7 +54,7 @@ export function MatchSelector({ entries, value, onChange }: MatchSelectorProps) 
 
   const select = (code: string) => {
     onChange(code);
-    navigate(`/compare/${encodeURIComponent(code)}`, { replace: true });
+    navigate(routes.compareWithMatch(code), { replace: true });
     setQuery('');
     setOpen(false);
     setActiveIndex(-1);

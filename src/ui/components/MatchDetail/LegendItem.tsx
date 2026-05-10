@@ -1,5 +1,6 @@
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Info } from 'lucide-react';
+import { TOOLTIP_DELAY_MS } from '@/ui/timing';
 
 interface LegendItemProps {
   /** Tailwind classes for the swatch (bg + border, with dark variants). */
@@ -23,7 +24,7 @@ export function LegendItem({ swatchColor, label, examples, hint, url }: LegendIt
       />
       <span className="font-medium text-slate-900 dark:text-slate-100">{label}</span>
       <span className="text-slate-500 dark:text-slate-400">— {examples}</span>
-      <Tooltip.Root delayDuration={150}>
+      <Tooltip.Root delayDuration={TOOLTIP_DELAY_MS}>
         <Tooltip.Trigger asChild>
           <button
             type="button"

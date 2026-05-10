@@ -11,6 +11,7 @@ import {
 import { buildColumns } from './columns';
 import { SortIndicator } from './SortIndicator';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
+import { routes } from '@/ui/routes';
 
 interface MatchesTableProps {
   entries: MatchEntry[];
@@ -88,7 +89,7 @@ export function MatchesTable({
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              onClick={() => navigate(`/match/${encodeURIComponent(row.original.code)}`)}
+              onClick={() => navigate(routes.matchDetail(row.original.code))}
               className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900/60"
             >
               {row.getVisibleCells().map((cell) => (

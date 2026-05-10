@@ -87,17 +87,27 @@ export function detectTournament(eventUnitCode: string): Tournament {
 }
 
 /**
- * Substring/regex patterns embedded in `eventUnit.code` that reveal the phase.
+ * Markers embedded in `eventUnit.code` that reveal the phase.
  * Order matters: GOLD/BRONZE share the `FNL-` prefix and must be checked before
  * generic finals; GROUP uses a regex because the group letter varies.
  */
+const EVENT_CODE_MARKER = {
+  GOLD_FINAL: 'FNL-000100--',
+  BRONZE_FINAL: 'FNL-000200--',
+  SEMI_FINAL: 'SFNL',
+  QUARTER_FINAL: 'QFNL',
+  GROUP: /GP[A-Z]-/,
+} as const;
+
 const PHASE_PATTERNS: ReadonlyArray<readonly [Phase, string | RegExp]> = [
-  [Phase.GOLD, 'FNL-000100--'],
-  [Phase.BRONZE, 'FNL-000200--'],
-  [Phase.SEMI_FINAL, 'SFNL'],
-  [Phase.QUARTER_FINAL, 'QFNL'],
-  [Phase.GROUP, /GP[A-Z]-/],
+  [Phase.GOLD, EVENT_CODE_MARKER.GOLD_FINAL],
+  [Phase.BRONZE, EVENT_CODE_MARKER.BRONZE_FINAL],
+  [Phase.SEMI_FINAL, EVENT_CODE_MARKER.SEMI_FINAL],
+  [Phase.QUARTER_FINAL, EVENT_CODE_MARKER.QUARTER_FINAL],
+  [Phase.GROUP, EVENT_CODE_MARKER.GROUP],
 ];
+
+const GROUP_LETTER_RE = /GP([A-Z])-/;
 
 export function detectPhase(eventUnitCode: string): Phase {
   for (const [phase, pattern] of PHASE_PATTERNS) {
@@ -109,7 +119,7 @@ export function detectPhase(eventUnitCode: string): Phase {
 }
 
 export function detectGroupLetter(eventUnitCode: string): string {
-  const m = /GP([A-Z])-/.exec(eventUnitCode);
+  const m = GROUP_LETTER_RE.exec(eventUnitCode);
   if (!m || !m[1]) {
     throw new Error(`detectGroupLetter: no group letter in "${eventUnitCode}"`);
   }

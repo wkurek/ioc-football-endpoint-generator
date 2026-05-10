@@ -3,6 +3,7 @@ import { ChevronRight, Download, GitCompare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TFunction } from 'i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
+import { routes } from '@/ui/routes';
 import { KickoffCell } from './KickoffCell';
 
 export interface ColumnFactoryArgs {
@@ -119,7 +120,7 @@ export function buildColumns({
             <Download className="h-4 w-4" aria-hidden="true" />
           </button>
           <Link
-            to={`/compare/${encodeURIComponent(row.original.code)}`}
+            to={routes.compareWithMatch(row.original.code)}
             onClick={(e) => e.stopPropagation()}
             aria-label={t('actions.compareThisMatch')}
             title={t('actions.compareThisMatch')}
@@ -129,7 +130,7 @@ export function buildColumns({
             <GitCompare className="h-4 w-4" aria-hidden="true" />
           </Link>
           <Link
-            to={`/match/${encodeURIComponent(row.original.code)}`}
+            to={routes.matchDetail(row.original.code)}
             onClick={(e) => e.stopPropagation()}
             aria-label={t('actions.viewDetails')}
             title={t('actions.viewDetails')}

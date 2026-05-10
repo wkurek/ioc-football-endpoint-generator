@@ -2,6 +2,7 @@ import { ChevronRight, Download, GitCompare } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { MatchEntry } from '@/ui/hooks/usePipeline';
+import { routes } from '@/ui/routes';
 import { splitKickoff } from './formatKickoff';
 
 interface MatchCardProps {
@@ -19,7 +20,7 @@ export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardPr
 
   return (
     <div
-      onClick={() => navigate(`/match/${encodeURIComponent(entry.code)}`)}
+      onClick={() => navigate(routes.matchDetail(entry.code))}
       className="cursor-pointer rounded-md border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900/60"
     >
       <div className="flex items-start gap-2">
@@ -67,7 +68,7 @@ export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardPr
               <Download className="h-4 w-4" aria-hidden="true" />
             </button>
             <Link
-              to={`/compare/${encodeURIComponent(entry.code)}`}
+              to={routes.compareWithMatch(entry.code)}
               onClick={(e) => e.stopPropagation()}
               aria-label={t('actions.compareThisMatch')}
               title={t('actions.compareThisMatch')}
@@ -77,7 +78,7 @@ export function MatchCard({ entry, selected, onToggle, onDownload }: MatchCardPr
               <GitCompare className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
-              to={`/match/${encodeURIComponent(entry.code)}`}
+              to={routes.matchDetail(entry.code)}
               onClick={(e) => e.stopPropagation()}
               aria-label={t('actions.viewDetails')}
               title={t('actions.viewDetails')}

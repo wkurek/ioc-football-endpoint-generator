@@ -9,14 +9,13 @@ import {
 } from 'react';
 import { ToastViewport, type ToastItem } from '@/ui/components/Toast/ToastViewport';
 import { ToastKind } from '@/ui/types';
+import { TOAST_DURATION_MS } from '@/ui/timing';
 
 interface ToastContextValue {
   show: (message: string, kind?: ToastKind) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
-
-const DEFAULT_DURATION = 3_000;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -29,7 +28,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => [...prev, { id, message, kind }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, DEFAULT_DURATION);
+    }, TOAST_DURATION_MS);
   }, []);
 
   const value = useMemo<ToastContextValue>(() => ({ show }), [show]);

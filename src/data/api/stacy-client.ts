@@ -8,7 +8,23 @@ import {
   type ResByRscH2H,
 } from './schemas';
 
-const BASE = 'https://stacy.olympics.com/OG2024/data';
+const STACY_BASE_URL = 'https://stacy.olympics.com/OG2024/data';
+
+/** Fixed query-string segments shared by every Stacy endpoint we hit. */
+const STACY_QUERY = {
+  COMPETITION: 'OG2024',
+  DISCIPLINE: 'FBL',
+  LANGUAGE: 'ENG',
+} as const;
+
+/** Endpoint stems on the Stacy CDN (CONVENTIONS.md #45). */
+const STACY_ENDPOINT = {
+  DAYS: 'SCH_DaysByDiscipline',
+  H2H: 'SCH_ByDisciplineH2H',
+  RES: 'RES_ByRSC_H2H',
+} as const;
+
+const ACCEPT_JSON = 'application/json';
 
 /**
  * Lower-level fetch + Zod parse with consistent error semantics.
@@ -17,7 +33,7 @@ const BASE = 'https://stacy.olympics.com/OG2024/data';
 async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(url, {
     method: 'GET',
-    headers: { Accept: 'application/json' },
+    headers: { Accept: ACCEPT_JSON },
     // CORS verified open (CONVENTIONS.md #22, #45). No special mode needed.
   });
 
@@ -52,16 +68,18 @@ export class StacyApiError extends Error {
 
 // ─── Endpoint URLs ────────────────────────────────────────────────────────
 
+const COMMON_QS = `comp=${STACY_QUERY.COMPETITION}~disc=${STACY_QUERY.DISCIPLINE}~lang=${STACY_QUERY.LANGUAGE}`;
+
 export function urlForDays(): string {
-  return `${BASE}/SCH_DaysByDiscipline~comp=OG2024~disc=FBL~lang=ENG.json`;
+  return `${STACY_BASE_URL}/${STACY_ENDPOINT.DAYS}~${COMMON_QS}.json`;
 }
 
 export function urlForH2HOnDate(date: string): string {
-  return `${BASE}/SCH_ByDisciplineH2H~comp=OG2024~disc=FBL~lang=ENG~date=${date}.json`;
+  return `${STACY_BASE_URL}/${STACY_ENDPOINT.H2H}~${COMMON_QS}~date=${date}.json`;
 }
 
 export function urlForRes(eventUnitCode: string): string {
-  return `${BASE}/RES_ByRSC_H2H~comp=OG2024~disc=FBL~rscResult=${eventUnitCode}~lang=ENG.json`;
+  return `${STACY_BASE_URL}/${STACY_ENDPOINT.RES}~comp=${STACY_QUERY.COMPETITION}~disc=${STACY_QUERY.DISCIPLINE}~rscResult=${eventUnitCode}~lang=${STACY_QUERY.LANGUAGE}.json`;
 }
 
 // ─── Public fetchers ──────────────────────────────────────────────────────
