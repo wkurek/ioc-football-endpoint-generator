@@ -125,6 +125,8 @@ We follow `example.json` schema strictly. Where the OG2024 source doesn't provid
 
 7. **Defensive errors.** If a match has `FINISHED` status but its `RES_ByRSC_H2H` is missing fields we depend on (e.g. `result.periods[TOT]`), the mapper throws with a precise error and the UI shows "X / 58 generated, Y errors" so the reviewer can see exactly what failed (CONVENTIONS.md §27). On the live archive nothing currently fails.
 
+8. **One match has a source-data gap in scorers (USA 3-0 Guinea, Men's Group A).** Atos's `playByPlay` for this match contains only 1 of the 3 USA goals — the other two are entirely absent from the action stream (no SHOT entries, `pbpa_ScoreH/A` jumps from `undefined` to `3-0` at the third goal). `score.home/away` is correct because we read it from `periods[TOT]` independently, but `scorers[]` lists 1 entry instead of 3. We have no way to recover the missing scorers without an external source, so we surface what the API gives us and accept the under-count for this single match.
+
 ---
 
 ## Architecture

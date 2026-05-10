@@ -92,3 +92,39 @@ describe.skipIf(!hasResAll)('buildScorers — own goals (CONVENTIONS.md #11)', (
     expect(og).not.toHaveProperty('assist');
   });
 });
+
+describe.skipIf(!hasResAll)('buildScorers — defensive cardinality (CONVENTIONS.md #11c)', () => {
+  function findGoalCompetitor(res: ReturnType<typeof loadRes>) {
+    for (const block of res.results.playByPlay ?? []) {
+      for (const action of block.actions) {
+        if (action.pbpa_period === 'PSO') continue;
+        if (action.pbpa_Action === 'OG') continue;
+        const comp = (action.competitors ?? []).find((c) =>
+          (c.athletes ?? []).some((a) => a.pbpat_role === 'SCR'),
+        );
+        if (comp?.athletes) return { action, comp };
+      }
+    }
+    throw new Error('no SCR action in fixture');
+  }
+
+  it('throws when a single action carries multiple SCR athletes', () => {
+    const res = loadRes('FBLWTEAM11------------SFNL000100--.json');
+    const { action, comp } = findGoalCompetitor(res);
+    comp.athletes!.push({ pbpat_role: 'SCR', pbpat_bib: 'X', pbpat_code: 'X', pbpat_order: '99' });
+
+    expect(() => buildScorers(res)).toThrow(
+      new RegExp(`action ${action.pbpa_id} has \\d+ SCR athletes`),
+    );
+  });
+
+  it('throws when a single action carries multiple ASSIST athletes', () => {
+    const res = loadRes('FBLWTEAM11------------SFNL000100--.json');
+    const { action, comp } = findGoalCompetitor(res);
+    comp.athletes!.push({ pbpat_role: 'ASSIST', pbpat_bib: 'X', pbpat_code: 'X', pbpat_order: '99' });
+
+    expect(() => buildScorers(res)).toThrow(
+      new RegExp(`action ${action.pbpa_id} has \\d+ ASSIST athletes`),
+    );
+  });
+});

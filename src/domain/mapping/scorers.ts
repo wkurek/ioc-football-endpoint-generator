@@ -54,9 +54,27 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       if (!scoringComp) continue;
 
       const scoringAthletes = scoringComp.athletes ?? [];
-      const scorerEntry = scoringAthletes.find((a) => a.pbpat_role === 'SCR');
-      const assistEntry = scoringAthletes.find((a) => a.pbpat_role === 'ASSIST');
+      // OG2024 always carries ≤1 SCR and ≤1 ASSIST per action, and the output
+      // schema (`Scorer.player` / `Scorer.assist`) only has room for one of
+      // each. Throw on multi-cardinality so schema drift surfaces as a
+      // per-match error (CONVENTIONS.md §11c, §27) instead of silently dropping
+      // the extras via `.find()` first-wins.
+      const scorerEntries = scoringAthletes.filter((a) => a.pbpat_role === 'SCR');
+      if (scorerEntries.length > 1) {
+        throw new Error(
+          `buildScorers: action ${action.pbpa_id} has ${scorerEntries.length} SCR athletes (expected ≤1) — schema drift?`,
+        );
+      }
+      const scorerEntry = scorerEntries[0];
       if (!scorerEntry) continue;
+
+      const assistEntries = scoringAthletes.filter((a) => a.pbpat_role === 'ASSIST');
+      if (assistEntries.length > 1) {
+        throw new Error(
+          `buildScorers: action ${action.pbpa_id} has ${assistEntries.length} ASSIST athletes (expected ≤1) — schema drift?`,
+        );
+      }
+      const assistEntry = assistEntries[0];
 
       const minute = parseMinute(action.pbpa_When);
       if (minute === null) continue; // skip if minute can't be parsed

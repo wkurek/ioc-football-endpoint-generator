@@ -185,6 +185,18 @@ W danych OG2024 są 4 samobóje w 3 meczach (Mali-ISR M GroupD; ZAM-? W GroupB; 
 - `pbpa_Action === "OG"` → `"open_play"`, `team` = drużyna przeciwna (pyt. 11a)
 - wszystko inne (`SHOT`, `FRD`, ewentualne inne) → `"open_play"`
 
+### 11b. Luka w danych źródłowych — USA 3-0 Guinea ✅
+
+Skanowanie spójności `scorers count == score.TOT` po wszystkich 58 meczach wykryło 1 niezgodność: `FBLMTEAM11--GPA-000600--` (USA-Guinea, faza grupowa). W `playByPlay` tego meczu jest tylko **jedna** akcja `SHOT` z `pbpa_Result: GOAL` (75', SCR athlete), choć score = 3-0. `pbpa_ScoreH/A` skacze z `undefined-undefined` wprost do `3-0` na 75'-tej minucie — dwa wcześniejsze gole USA **nie są w ogóle obecne w action stream** (brak SHOT/PEN/OG akcji, które by je opisywały).
+
+**Decyzja: akceptujemy niedoszacowanie `scorers[]` dla tego meczu.** `score.home/away` pozostaje poprawny (3-0), bo czytamy go z `periods[TOT]` niezależnie od `playByPlay`. Bez dodatkowego źródła danych nie jesteśmy w stanie odzyskać brakujących strzelców (kim byli, w której minucie). README dokumentuje to jako known limitation analogicznie do PSO i headerów. Wbudowanie heurystyki ("jeśli scorers.length < score.home + score.away, dodaj placeholder") byłoby gorsze niż brak — schemat `Scorer` wymaga `player: string` i `minute: number`, więc placeholder musiałby zmyślać dane.
+
+### 11c. Liczność `SCR` i `ASSIST` w pojedynczej akcji ✅
+
+W danych OG2024 każda akcja bramkowa ma dokładnie jednego athlete z `pbpat_role: "SCR"` (166/166 zwykłych goli; 4 samobóje używają osobnego mechanizmu `pbpa_Action: "OG"`) i co najwyżej jednego z `pbpat_role: "ASSIST"` (101 z asystą, 69 bez, 0 z >1). Schemat outputu (`Scorer.player`, `Scorer.assist`) to potwierdza — oba pola to stringi, nie tablice.
+
+**Decyzja: defensywny throw na liczność > 1.** Zamiast `.find()` (silent first-wins) używamy `.filter()` i throw'ujemy gdy liczba SCR-ów lub ASSIST-ów w jednej akcji przekracza 1. Jeśli Atos kiedyś zacznie raportować np. "rebound goal" z dwoma strzelcami, błąd wpadnie do `matchErrors` z konkretnym `pbpa_id` zamiast po cichu gubić informację. Wyłapie to schema drift i zmusi nas do podjęcia decyzji (czy mappingiem pójść, czy zaktualizować `example.json`).
+
 ---
 
 ## 12. Mapowanie `status` ✅

@@ -62,6 +62,39 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
     expect(ok).toBe(58);
   });
 
+  it('scorers count equals score.home+away for every match except the known data gap', () => {
+    // Source-data anomaly (CONVENTIONS.md §11b, README known limitation #8):
+    // USA 3-0 Guinea (Men's Group A) has only 1 of 3 USA goals in playByPlay.
+    // We can't recover the missing scorers, so we lock the gap in here as a
+    // known exception and assert the invariant for the other 57 matches.
+    const KNOWN_GAP = new Set(['FBLMTEAM11------------GPA-000600--']);
+    const mismatches: Array<{ code: string; score: string; scorers: number }> = [];
+    for (const sch of schedules) {
+      const code = sch.eventUnit.code;
+      if (KNOWN_GAP.has(code)) continue;
+      const path = join(RES_ALL_DIR, `${code}.json`);
+      if (!existsSync(path)) continue;
+      const resJson = JSON.parse(readFileSync(path, 'utf8'));
+      const res = ResByRscH2HSchema.parse(resJson);
+      const match = buildMatch({ sch, res, allMatches: schedules });
+      const expected = match.score.home + match.score.away;
+      if (match.scorers.length !== expected) {
+        mismatches.push({
+          code,
+          score: `${match.score.home}-${match.score.away}`,
+          scorers: match.scorers.length,
+        });
+      }
+    }
+    if (mismatches.length > 0) {
+      const summary = mismatches
+        .map((m) => `  ${m.code}: score ${m.score} but ${m.scorers} scorers`)
+        .join('\n');
+      throw new Error(`${mismatches.length} matches drift from scorers⇄score invariant:\n${summary}`);
+    }
+    expect(mismatches).toHaveLength(0);
+  });
+
   it('every generated match conforms to the example.json schema', () => {
     const errors: Array<{ code: string; error: string }> = [];
     for (const sch of schedules) {
