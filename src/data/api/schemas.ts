@@ -1,13 +1,9 @@
 import { z } from 'zod';
 
 /**
- * Zod schemas for OG2024 (Atos) endpoints behind stacy.olympics.com.
- * Used to validate fetch responses at the network boundary so that
- * downstream domain code can trust the shape.
- *
- * Schemas are intentionally permissive on optional fields — Atos's data
- * occasionally omits keys (e.g. `pbpa_When` for PSO actions). Required
- * fields are the ones we depend on per CONVENTIONS.md mappings.
+ * Zod schemas for the Atos OG2024 endpoints. Permissive on optional fields
+ * (Atos sometimes omits keys, e.g. `pbpa_When` for PSO actions); required
+ * fields are the ones the mappers depend on.
  */
 
 // ─── SCH_DaysByDiscipline ──────────────────────────────────────────────────

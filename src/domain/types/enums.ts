@@ -1,11 +1,6 @@
 /**
- * Domain enums — output vocabulary (values that appear in `Match`,
- * `MatchSummary`, `FilterCriteria`, etc.). Distinct from API source codes,
- * which live in `@/data/api/codes`.
- *
- * Style: `as const` objects with a derived string-literal union type so
- * `Position.GK` and `'GK'` are interchangeable, and TypeScript narrows
- * exhaustively.
+ * Domain enums — output vocabulary used in `Match`, `MatchSummary`,
+ * `FilterCriteria`. Distinct from API source codes (`@/data/api/codes`).
  */
 
 export const GoalType = {
@@ -16,13 +11,10 @@ export const GoalType = {
 export type GoalType = (typeof GoalType)[keyof typeof GoalType];
 
 /**
- * Full position vocabulary from `example.json`. The mapper
- * (`src/domain/mapping/position.ts`) currently emits only the 4-value subset
- * `{GK, CB, CM, FW}` — see CONVENTIONS.md §3 for why granular Atos codes don't
- * deterministically map to the granular roles. The type covers all 11 values
- * so that:
- *   1. `Position` matches `MatchSchema.PositionSchema` (single contract).
- *   2. A future granular mapper can emit RB/LB/DM/AM/LW/RW/ST without a type change.
+ * Full position vocabulary from `example.json`. The mapper currently emits
+ * only `{GK, CB, CM, FW}` — Atos broad codes don't reveal granular roles.
+ * Type covers all 11 so a future granular mapper doesn't need a type change
+ * and so it stays in sync with `MatchSchema.PositionSchema`.
  */
 export const Position = {
   GK: 'GK',
@@ -40,8 +32,8 @@ export const Position = {
 export type Position = (typeof Position)[keyof typeof Position];
 
 /**
- * Team side designation. Values match `eue_value` for `HOME_AWAY` (uppercase),
- * NOT the lowercase `home`/`away` keys used in the output JSON shape.
+ * Team side. Uppercase to match `eue_value` for `HOME_AWAY` from the API —
+ * NOT the lowercase `home`/`away` keys used in the output JSON.
  */
 export const Side = {
   HOME: 'HOME',
@@ -72,11 +64,11 @@ export const FieldSource = {
 } as const;
 export type FieldSource = (typeof FieldSource)[keyof typeof FieldSource];
 
-/** Tag used by jsonLines for structural braces / mixed-source blocks. */
+/** Used by jsonLines for structural braces / mixed-source blocks. */
 export const NEUTRAL = 'neutral';
 export type LineSource = FieldSource | typeof NEUTRAL;
 
-/** Output `Match.status`. Today only `FT` is emitted (CONVENTIONS.md #12). */
+/** Output `Match.status`. Only `FT` is emitted today. */
 export const MatchStatus = {
   FULL_TIME: 'FT',
 } as const;

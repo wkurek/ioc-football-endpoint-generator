@@ -1,23 +1,16 @@
 import type { Match, TeamLineup, Player, Scorer } from '@/domain/types';
 
 /**
- * Serialize a single match to a JSON string in `example.json` shape.
- *
- * Output is byte-perfect against `example.json`: no wrapper, no `__metadata__`,
- * no extra keys. Used as the QA reference for "expected" responses, so byte
- * stability matters — a `JSON.stringify(match)` would tie key order to the
- * `Match` interface declaration order, which is fragile if the type ever
- * changes. Instead, we build the object explicitly in the canonical order
- * shown in `example.json` (competition → venue → kickoff → status → teams →
- * score → scorers → lineups), and per-Player/Scorer/Lineup the same way.
- *
- * Pretty-printed with 2-space indent for human review.
+ * Byte-perfect `example.json` shape: no wrapper, no `__metadata__`, no
+ * extras. Keys are emitted in `example.json` order via an explicit
+ * canonicalizer — a plain `JSON.stringify(match)` would tie key order to
+ * the `Match` interface declaration, which is fragile.
  */
 export function exportSingleAsJson(match: Match): string {
   return JSON.stringify(canonicalizeMatch(match), null, 2);
 }
 
-/** Build an object whose key insertion order matches `example.json`. */
+/** Object literal built in `example.json` key order, regardless of input field order. */
 export function canonicalizeMatch(m: Match): Match {
   const scorers = m.scorers.map(canonicalizeScorer);
   return {
@@ -44,9 +37,9 @@ export function canonicalizeMatch(m: Match): Match {
 }
 
 function canonicalizeScorer(s: Scorer): Scorer {
-  // `assist` is optional — only emit the key when present (CONVENTIONS.md §4).
-  // Two distinct object literals because key insertion order matters: the
-  // canonical example.json order is `team → player → minute → assist? → type`.
+  // Two literals because key order is `team → player → minute → assist? → type`
+  // and `assist` must sit between `minute` and `type` when present (omitted
+  // entirely when absent — example.json never emits `null`).
   if (s.assist !== undefined) {
     return { team: s.team, player: s.player, minute: s.minute, assist: s.assist, type: s.type };
   }

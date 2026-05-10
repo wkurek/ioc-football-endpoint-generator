@@ -12,16 +12,11 @@ import { mapPosition } from './position';
 import { TranslatableError } from '@/domain/errors';
 
 /**
- * Build the `lineups` block (CONVENTIONS.md #19, #24, #25, #26, #30).
- *
- * Source: RES.results.items[]. Each team item has:
- *   - eventUnitEntries[HOME_AWAY] → identifies home vs away
- *   - eventUnitEntries[FORMATION] → e.g. "4-2-3-1"
- *   - teamCoaches[] → head coach (function.functionCode === "COACH")
- *   - teamAthletes[] → 18 players, with eventUnitEntries[STARTER=Y] flag for the 11
- *
- * Sorting: by `startSortOrder` ASC. Starters → startingXI (filtered by STARTER=Y),
- * rest → bench. Both lists naturally come out in GK→DF→MF→FW order.
+ * Source: `RES.results.items[]` cross-referenced by `HOME_AWAY`. For each
+ * side: formation from `eventUnitEntries[FORMATION]`, coach picked by
+ * function-code precedence, players sorted by `startSortOrder` ASC and
+ * partitioned by `STARTER=Y` into startingXI/bench (the order naturally
+ * comes out GK→DF→MF→FW).
  */
 export function buildLineups(items: ResTeamItemT[]): Lineups {
   const homeItem = findTeamByHomeAway(items, Side.HOME);
@@ -67,15 +62,9 @@ export function buildTeamLineup(item: ResTeamItemT): TeamLineup {
 }
 
 /**
- * Function codes that designate a "head coach" for the purpose of the
- * `lineups.*.coach` field, in precedence order:
- *
- *   - `COACH`    — regular head coach (most matches)
- *   - `SI_COA`   — stand-in coach (e.g. Canada at Paris 2024 W: Andy Spence
- *                  deputizing for the suspended Bev Priestman)
- *   - `INT_COA`  — interim coach (defensive — not yet observed in OG2024)
- *
- * Falls back to the first non-assistant coach if no precedence match is found.
+ * Head coach precedence: regular `COACH` first, then stand-in (Canada W
+ * 2024: Spence for the suspended Priestman — covered here), then interim
+ * (defensive). Final fallback is any non-assistant coach.
  */
 const HEAD_COACH_FUNCTION_CODES: readonly FunctionCodeT[] = [
   FunctionCode.COACH,
@@ -91,7 +80,6 @@ function pickHeadCoachName(coaches: ResTeamCoachT[]): string | undefined {
     const match = coaches.find((c) => c.function.functionCode === fc);
     if (match) return formatPersonName(match.coach);
   }
-  // Defensive fallback: any coach that isn't explicitly an assistant.
   const fallback = coaches.find(
     (c) => !ASSISTANT_COACH_FUNCTION_CODES.has(c.function.functionCode as FunctionCodeT),
   );

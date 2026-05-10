@@ -10,16 +10,12 @@ interface PeriodLike {
 }
 
 /**
- * Build the `score` block (CONVENTIONS.md #28).
+ * `score.home/away` ← TOT period (regulation+ET, excluding PSO).
+ * `score.halfTime.home/away` ← H1 period.
  *
- * - `score.home/away`           ← TOT period (after regulation+ET, NOT including PSO).
- * - `score.halfTime.home/away`  ← H1 period.
- *
- * Throws if either TOT or H1 period is missing — defensive per CONVENTIONS.md #27.
- *
- * Note on PSO: matches that went to penalties have TOT representing the score
- * after regulation+ET (e.g. EGY-PAR TOT = 1-1, Egypt won on penalties). The
- * PSO winner is intentionally not encoded — see CONVENTIONS.md #8.
+ * For PSO matches, TOT is the score after regulation+ET (e.g. EGY-PAR TOT
+ * = 1-1, Egypt won on penalties); the shootout outcome is dropped because
+ * `example.json` has no field for it.
  */
 export function buildScore(periods: PeriodLike[]): Score {
   const tot = periods.find((p) => p.p_code === PeriodCode.TOTAL);
@@ -46,5 +42,4 @@ function parseScoreValue(raw: string, label: string): number {
   return n;
 }
 
-/** Re-exported for convenience in tests. */
 export type { z };

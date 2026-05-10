@@ -1,7 +1,4 @@
-/**
- * Output interfaces — strictly mirror `example.json` shape (CONVENTIONS.md #1).
- * Each `Match` instance is a single endpoint response.
- */
+/** Output interfaces — strictly mirror `example.json` shape. */
 
 import type { GoalType, Position, MatchStatus } from './enums';
 
@@ -28,7 +25,7 @@ export interface Scorer {
   team: string;
   player: string;
   minute: number;
-  /** Optional — omit when there's no assist (CONVENTIONS.md #29). */
+  /** Omit the key when no assist (do not emit `null`). */
   assist?: string;
   type: GoalType;
 }
@@ -63,9 +60,8 @@ export interface Competition {
 export interface Match {
   competition: Competition;
   venue: Venue;
-  /** ISO 8601 with timezone, preserved as-is (CONVENTIONS.md #17). */
+  /** ISO 8601 with timezone, preserved as-is from SCH. */
   kickoff: string;
-  /** Always `MatchStatus.FULL_TIME` ("FT") today (CONVENTIONS.md #12). */
   status: MatchStatus;
   teams: Teams;
   score: Score;

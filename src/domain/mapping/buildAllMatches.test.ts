@@ -67,10 +67,9 @@ describe.skipIf(!hasResAll)('buildMatch — full 58-match corpus', () => {
   });
 
   it('scorers count equals score.home+away for every match except the known data gap', () => {
-    // Source-data anomaly (CONVENTIONS.md §11b, README known limitation #8):
-    // USA 3-0 Guinea (Men's Group A) has only 1 of 3 USA goals in playByPlay.
-    // We can't recover the missing scorers, so we lock the gap in here as a
-    // known exception and assert the invariant for the other 57 matches.
+    // USA 3-0 Guinea (Men's Group A) has only 1 of 3 USA goals in playByPlay
+    // — Atos source-data gap, can't recover without an external feed. Locked
+    // in as a known exception; the invariant must hold for the other 57.
     const KNOWN_GAP = new Set(['FBLMTEAM11------------GPA-000600--']);
     const mismatches: Array<{ code: string; score: string; scorers: number }> = [];
     for (const sch of schedules) {

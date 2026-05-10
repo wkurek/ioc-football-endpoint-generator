@@ -27,9 +27,8 @@ export function ComparePage() {
   const [selectedCode, setSelectedCode] = useState<string | undefined>(routeCode);
   const [actualText, setActualText] = useState('');
   const [splitView, setSplitView] = useState(true);
-  // useTransition lets React commit `isPending=true` before re-rendering the
-  // heavy DiffViewer, so the spinner overlay appears immediately on click while
-  // the diff recomputes in the background.
+  // The diff is heavy; useTransition keeps the spinner snappy while the
+  // recomputation runs in the background.
   const [isDiffPending, startDiffTransition] = useTransition();
 
   const selectedEntry = useMemo(
@@ -42,10 +41,8 @@ export function ComparePage() {
     [selectedEntry],
   );
 
-  // Debounce the input that drives the diff. Each keystroke would otherwise
-  // re-parse the JSON and rebuild the diff — expensive for large pastes.
-  // 200 ms is below the perceptual "lag" threshold while still collapsing
-  // a paste / fast typing into a single recompute.
+  // 200ms collapses fast typing / paste storms into a single recompute
+  // without crossing the perceptual "lag" threshold.
   const debouncedActualText = useDebouncedValue(actualText, 200);
   const parsed = useMemo(() => parseJsonInput(debouncedActualText), [debouncedActualText]);
   const actualJson = useMemo(

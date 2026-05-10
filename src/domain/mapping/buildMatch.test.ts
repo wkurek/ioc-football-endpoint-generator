@@ -87,8 +87,7 @@ describe('buildMatch (integration with fixtures)', () => {
     expect(match.lineups.away.startingXI).toHaveLength(11);
     expect(match.lineups.away.bench).toHaveLength(7);
 
-    // Mapper currently emits only GK/CB/CM/FW (subset of the 11-value vocab —
-    // CONVENTIONS.md §3). The wider Position type accepts all 11.
+    // Mapper emits only GK/CB/CM/FW today (subset of the 11-value vocab).
     const allPositions = [
       ...match.lineups.home.startingXI,
       ...match.lineups.home.bench,
@@ -134,12 +133,11 @@ describe('buildMatch (integration with fixtures)', () => {
     // unitNum=27 in the source API. The Men's tournament uses a cumulative counter
     // 1-32: group stage 1-24, QF 25-28, SF 29-30, Bronze 31, Gold 32.
     expect(match.competition.round).toBe("Men's Quarter-final 27");
-    // Score after regulation+ET (without PSO) — CONVENTIONS.md #8
+    // Score after regulation+ET — PSO outcome excluded.
     expect(match.score.home).toBe(1);
     expect(match.score.away).toBe(1);
-    // PSO scorers excluded — should be exactly 2 goals (1-1 in regulation/ET)
+    // 2 goals in regulation/ET; PSO actions filtered out of scorers[].
     expect(match.scorers.length).toBe(2);
-    // No undefined/null minutes (PSO would have those)
     for (const s of match.scorers) {
       expect(typeof s.minute).toBe('number');
       expect(Number.isFinite(s.minute)).toBe(true);

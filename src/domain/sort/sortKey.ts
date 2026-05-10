@@ -1,16 +1,11 @@
 import type { MatchSummary } from '@/domain/matchSummary';
 
 /**
- * Default deterministic order for the matches list and bulk export
- * (CONVENTIONS.md §9): `(kickoff ASC, eventUnit.code ASC)`.
+ * Default deterministic order: `(kickoff ASC, eventUnit.code ASC)`.
  *
- * Compares kickoff by parsed timestamp, not by string — so a hypothetical
- * mixed-offset corpus (e.g. one match in `+02:00`, another in `+01:00`)
- * sorts by actual time-of-event. Today every Paris 2024 kickoff is `+02:00`,
- * but lex compare would silently break the moment that changed.
- *
- * Tie-breaker on code is critical for parallel kickoffs — group stage Olympic
- * matches frequently kick off simultaneously across venues.
+ * Compares kickoff by parsed timestamp, not by string — lex compare would
+ * silently break for mixed-offset kickoffs. Tie-break on code is required
+ * because Olympic group-stage matches run in parallel across venues.
  */
 export function compareMatchSummary(a: MatchSummary, b: MatchSummary): number {
   const dt = Date.parse(a.kickoff) - Date.parse(b.kickoff);
@@ -18,10 +13,7 @@ export function compareMatchSummary(a: MatchSummary, b: MatchSummary): number {
   return a.eventUnitCode < b.eventUnitCode ? -1 : 1;
 }
 
-/**
- * Returns a new array with matches sorted in default order.
- * Doesn't mutate the input.
- */
+/** Returns a new array — does not mutate the input. */
 export function sortMatchSummaries(matches: readonly MatchSummary[]): MatchSummary[] {
   return [...matches].sort(compareMatchSummary);
 }

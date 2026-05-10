@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildCompetition, buildRound } from './competition';
 
 describe('buildCompetition', () => {
-  it('uses constants for name and season (CONVENTIONS.md #3, #4)', () => {
+  it('uses constants for name and season', () => {
     const c = buildCompetition("Men's Group A", 1);
     expect(c.name).toBe('Olympic Games');
     expect(c.season).toBe('Paris 2024');

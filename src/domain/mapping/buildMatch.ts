@@ -18,13 +18,13 @@ interface BuildMatchInput {
 }
 
 /**
- * Compose a full Match record from SCH + RES, per CONVENTIONS.md §2
- * (SCH wins for pre-match fields; RES used only for post-match).
+ * Compose a full Match from SCH + RES. SCH wins for pre-match fields,
+ * RES is used only for post-match. Any missing required field throws so
+ * the failure surfaces as a per-match error in the UI rather than silently
+ * leaking through.
  *
- * Throws on any required field missing — defensive (CONVENTIONS.md §7).
- *
- * In dev mode (`import.meta.env.DEV`), validates the result against
- * `MatchSchema` to catch shape drift early — no cost in production.
+ * In dev (`import.meta.env.DEV`), the result is also validated against
+ * `MatchSchema` to catch shape drift early. No cost in production.
  */
 export function buildMatch({ sch, res }: BuildMatchInput): Match {
   const out: Match = {

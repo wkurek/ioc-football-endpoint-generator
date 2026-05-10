@@ -5,28 +5,18 @@ import { formatPersonName } from './name';
 import { TranslatableError } from '@/domain/errors';
 
 /**
- * Build the `scorers` array (CONVENTIONS.md #7, #9, #11, #29).
+ * Walks `playByPlay[].actions[]`, skipping PSO entries, and emits one
+ * `Scorer` per goal. Sorted by `(minute, pbpa_order)` ASC.
  *
- * Algorithm:
- *   1. Iterate over `playByPlay[].actions[]`.
- *   2. Skip PSO actions entirely (CONVENTIONS.md #7).
- *   3. `pbpa_Action === "OG"` (own goal) takes a dedicated branch — the player
- *      is on his OWN team in `competitors[]` (no `SCR` role) but the goal is
- *      credited to the opposing team. See `buildOwnGoalScorer` below.
- *   4. Otherwise look at `competitors[].athletes[]` for `pbpat_role === "SCR"`.
- *      The owning competitor's `pbpc_code` gives the scoring team.
- *   5. Skip actions whose `pbpa_When` doesn't match `^\d+'(?: ?\+\d+)?$` (defensive).
- *   6. Type:
- *      - `pbpa_Action === "PEN"` (and not PSO) → "penalty"
- *      - `OG` and everything else → "open_play"
- *      (header undetectable in source — CONVENTIONS.md #10)
- *   7. Assist: if same competitor's athletes contains `pbpat_role === "ASSIST"`,
- *      include `assist`; otherwise omit the key (CONVENTIONS.md #29). OG never
- *      carries an assist.
- *   8. Sort by `minute` ASC, tie-break by source `pbpa_order` (chronological).
+ * Own goals (`pbpa_Action === "OG"`) take a dedicated branch — the player
+ * is on his OWN team in `competitors[]` (no `SCR` role), but per FIFA
+ * convention the goal is credited to the opposing team. See
+ * `buildOwnGoalScorer`.
+ *
+ * Header detection isn't possible — Atos doesn't carry body-part data. So
+ * `type` only ever emits `"penalty"` or `"open_play"`.
  */
 export function buildScorers(res: ResByRscH2H): Scorer[] {
-  // Build team helpers: pbpc_code → name + bib → player name.
   const teamsMeta = buildTeamMeta(res.results.items);
 
   type Intermediate = Scorer & { _order: number };
@@ -39,28 +29,21 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
 
       const competitors = action.competitors ?? [];
 
-      // Own goal (CONVENTIONS.md #11): API marks it with pbpa_Action === "OG",
-      // lists the player on his OWN team in competitors[] (no "SCR" role) and
-      // moves the score to the opposing side. Per FIFA convention we credit the
-      // goal to the beneficiary (opposing) team while keeping the player's name.
       if (action.pbpa_Action === PbpaAction.OWN_GOAL) {
         const ogScorer = buildOwnGoalScorer(action, teamsMeta);
         if (ogScorer) collected.push(ogScorer);
         continue;
       }
 
-      // Find the scoring competitor (the one whose athletes[] has SCR).
       const scoringComp = competitors.find((c) =>
         (c.athletes ?? []).some((a) => a.pbpat_role === PbpatRole.SCORER),
       );
       if (!scoringComp) continue;
 
       const scoringAthletes = scoringComp.athletes ?? [];
-      // OG2024 always carries ≤1 SCR and ≤1 ASSIST per action, and the output
-      // schema (`Scorer.player` / `Scorer.assist`) only has room for one of
-      // each. Throw on multi-cardinality so schema drift surfaces as a
-      // per-match error (CONVENTIONS.md §11c, §27) instead of silently dropping
-      // the extras via `.find()` first-wins.
+      // Defensive: schema allows only one player + one assist per action.
+      // Filter + length-check (instead of `.find()`) so multi-cardinality
+      // surfaces as a per-match error rather than silent first-wins drop.
       const scorerEntries = scoringAthletes.filter((a) => a.pbpat_role === PbpatRole.SCORER);
       if (scorerEntries.length > 1) {
         throw new TranslatableError('errors.scorers.tooManyScorers', {
@@ -81,7 +64,7 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       const assistEntry = assistEntries[0];
 
       const minute = parseMinute(action.pbpa_When);
-      if (minute === null) continue; // skip if minute can't be parsed
+      if (minute === null) continue;
 
       const team = teamsMeta.byTeamCode[scoringComp.pbpc_code];
       if (!team) {
@@ -144,12 +127,10 @@ function buildTeamMeta(items: ResTeamItemT[]): TeamsMeta {
 }
 
 /**
- * Maps an `OG` (own goal) action to a scorer entry. The API attaches the
- * player to his OWN team in `competitors[]` (without an `SCR` role), while the
- * goal counts for the opposing side (visible in `pbpa_ScoreH/A`). Per FIFA
- * convention we keep the player's name and credit the goal to the opposing
- * team. Returns `null` when the action is unattributable (no athlete recorded
- * or unparseable minute) so the caller can skip it.
+ * The API attaches an own-goal scorer to his OWN team in `competitors[]`
+ * without an `SCR` role; the goal counts for the opposing side. Returns
+ * `null` when the action is unattributable (no athlete recorded or
+ * unparseable minute) so the caller can skip it.
  */
 function buildOwnGoalScorer(
   action: ResPbpaActionT,
@@ -194,15 +175,10 @@ function buildOwnGoalScorer(
 }
 
 /**
- * Parses `pbpa_When` to integer minute (CONVENTIONS.md #9 — base minute, ignore `+X`).
- *
- *   "11'"        → 11
- *   "45' +2"     → 45
- *   "90' +3"     → 90
- *   "99'"        → 99   (ET-H1 — continuous numbering)
- *   "120' +1"    → 120
- *   undefined    → null (e.g. PSO; caller skips)
- *   "ET-HT"      → null (defensive)
+ * Take the base minute, drop the `+X` stoppage suffix. Atos uses continuous
+ * numbering (ET-H1 starts at 91), so `"99'"` is minute 99 of the match,
+ * `"90' +3"` collapses to 90. Returns `null` for undefined input (PSO) or
+ * non-numeric forms — caller skips.
  */
 export function parseMinute(when: string | undefined): number | null {
   if (!when) return null;
@@ -212,11 +188,6 @@ export function parseMinute(when: string | undefined): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-/**
- * Maps `pbpa_Action` to our enum (CONVENTIONS.md #11).
- *   "PEN"  (and not in PSO context) → "penalty"
- *   anything else                    → "open_play"
- */
 export function classifyGoalType(pbpaAction: string): GoalType {
   if (pbpaAction === PbpaAction.PENALTY) return GoalType.PENALTY;
   return GoalType.OPEN_PLAY;

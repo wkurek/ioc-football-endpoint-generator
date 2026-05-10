@@ -1,9 +1,8 @@
 import { FieldSource, NEUTRAL, type LineSource } from '@/domain/types';
 
 /**
- * Maps a JSON path (within the example.json shape) to its source-of-truth tag
- * (CONVENTIONS.md #31, #37). Used by the Generated view to color-code each
- * field by where its data came from.
+ * JSON path → source-of-truth tag (sch/res/const/neutral). Drives the
+ * per-field color highlight on the Generated view.
  */
 export function pathSource(path: readonly string[]): LineSource {
   if (path.length === 0) return NEUTRAL;

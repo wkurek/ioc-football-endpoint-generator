@@ -33,9 +33,9 @@ describe('buildScore', () => {
     expect(score.halfTime).toEqual({ home: 1, away: 1 });
   });
 
-  it('reports score after regulation+ET for PSO matches (PSO outcome lost — CONVENTIONS.md #8)', () => {
-    // EGY 1-1 PAR — Men's QF, ended 1-1 after ET, Egypt won on penalties.
-    // We intentionally lose the PSO winner — score reflects regulation+ET only.
+  it('reports score after regulation+ET for PSO matches (shootout outcome dropped)', () => {
+    // EGY 1-1 PAR — Men's QF, 1-1 after ET, Egypt won on penalties.
+    // PSO winner is intentionally dropped; score reflects regulation+ET only.
     const score = buildScore(
       periods([
         ['H1', '0', '1'],
@@ -60,7 +60,7 @@ describe('buildScore', () => {
     expect(score).toEqual({ home: 0, away: 0, halfTime: { home: 0, away: 0 } });
   });
 
-  it('throws if TOT period is missing (CONVENTIONS.md #27)', () => {
+  it('throws if TOT period is missing', () => {
     expect(() => buildScore(periods([['H1', '0', '0']]))).toThrow(/TOT/);
   });
 

@@ -49,7 +49,7 @@ describe('classifyGoalType', () => {
     expect(classifyGoalType('SHOT')).toBe('open_play');
   });
 
-  it('maps FRD (free kick goal) to "open_play" (CONVENTIONS.md #11)', () => {
+  it('maps FRD (free kick goal) to "open_play"', () => {
     expect(classifyGoalType('FRD')).toBe('open_play');
   });
 
@@ -58,7 +58,7 @@ describe('classifyGoalType', () => {
   });
 });
 
-describe.skipIf(!hasResAll)('buildScorers — own goals (CONVENTIONS.md #11)', () => {
+describe.skipIf(!hasResAll)('buildScorers — own goals', () => {
   it('credits OG to the opposing team and keeps the player name (Mali 0-1 Israel)', () => {
     // Sole goal of the match is Hamidou Diallo's own goal at 56' — counts for Israel.
     const res = loadRes('FBLMTEAM11------------GPD-000100--.json');
@@ -93,7 +93,7 @@ describe.skipIf(!hasResAll)('buildScorers — own goals (CONVENTIONS.md #11)', (
   });
 });
 
-describe.skipIf(!hasResAll)('buildScorers — defensive cardinality (CONVENTIONS.md #11c)', () => {
+describe.skipIf(!hasResAll)('buildScorers — defensive cardinality', () => {
   function findGoalCompetitor(res: ReturnType<typeof loadRes>) {
     for (const block of res.results.playByPlay ?? []) {
       for (const action of block.actions) {

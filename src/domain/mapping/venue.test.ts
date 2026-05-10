@@ -33,7 +33,7 @@ describe('buildVenue', () => {
     ).toEqual({ name: 'Marseille Stadium', city: 'Marseille' });
   });
 
-  it('throws when venue.description is missing (CONVENTIONS.md #27)', () => {
+  it('throws when venue.description is missing', () => {
     expect(() =>
       buildVenue({
         venueDescription: undefined,

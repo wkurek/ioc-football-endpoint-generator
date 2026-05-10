@@ -26,10 +26,7 @@ export const EMPTY_FILTER: FilterCriteria = {
   search: '',
 };
 
-/**
- * Apply all filters (AND-combined) to the matches list.
- * Pure function — same input always produces same output (CONVENTIONS.md acceptance).
- */
+/** AND-combined filter — pure, same input → same output. */
 export function filterMatches(
   matches: readonly MatchSummary[],
   criteria: FilterCriteria,

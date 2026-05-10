@@ -19,7 +19,7 @@ export { Phase, Tournament } from '@/domain/types';
 export interface MatchSummary {
   /** `eventUnit.code` — globally unique match ID. */
   eventUnitCode: string;
-  /** ISO 8601 kickoff with timezone (preserved as-is, CONVENTIONS.md #17). */
+  /** ISO 8601 kickoff with timezone, preserved as-is from SCH. */
   kickoff: string;
   /** YYYY-MM-DD slice of kickoff (for filtering / grouping). */
   date: string;

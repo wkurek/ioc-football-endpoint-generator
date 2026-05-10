@@ -9,13 +9,11 @@ export interface JsonLine {
 }
 
 /**
- * Walks a Match record and emits a flat list of pretty-printed JSON lines
- * tagged with their source-of-truth (sch/res/const) per CONVENTIONS.md #37.
- *
- * The output mirrors `JSON.stringify(match, null, 2)` exactly, but with each
- * line carrying a tag so the Generated view can color-code it. Container
- * open/close lines inherit the source when every leaf descendant agrees,
- * so a wholly-`res` block (e.g. `lineups`) is highlighted as one region.
+ * Mirrors `JSON.stringify(match, null, 2)` line-for-line, but each line
+ * carries a source-of-truth tag (sch/res/const/neutral) so the Generated
+ * view can color-code it. Container open/close lines inherit the source
+ * when every descendant agrees — so a wholly-`res` block like `lineups`
+ * highlights as one region.
  */
 export function buildJsonLines(match: Match): JsonLine[] {
   const lines: JsonLine[] = [];

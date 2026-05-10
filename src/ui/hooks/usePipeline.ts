@@ -17,17 +17,17 @@ export interface MatchEntry {
   /** eventUnit.code */
   code: string;
   summary: MatchSummary;
-  /** undefined until RES has loaded for this match */
+  /** Undefined until RES has loaded for this match. */
   match?: Match;
-  /** populated when buildMatch threw for this code (CONVENTIONS.md #27) */
+  /** Populated when buildMatch threw for this code. */
   buildError?: Error;
-  /** populated when the RES network request for this code failed */
+  /** Populated when the RES network request for this code failed. */
   resError?: Error;
 }
 
 export interface PipelineState {
   phase: PipelinePhase;
-  /** Sorted list of matches (CONVENTIONS.md #15). */
+  /** Sorted list of matches. */
   entries: MatchEntry[];
   /**
    * Tournament match dates from `SCH_DaysByDiscipline` (sorted ASC, YYYY-MM-DD).
@@ -70,9 +70,7 @@ interface PipelineOptions {
   enabled?: boolean;
 }
 
-/**
- * Orchestrates the SCH→H2H→RES fetch pipeline (CONVENTIONS.md #40).
- */
+/** Orchestrates the SCH-Days → H2H → RES fetch pipeline. */
 export function usePipeline(options: PipelineOptions = {}): PipelineState {
   const enabled = options.enabled ?? false;
   const queryClient = useQueryClient();

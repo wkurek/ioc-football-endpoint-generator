@@ -19,7 +19,6 @@ const STACY_QUERY = {
   LANGUAGE: 'ENG',
 } as const;
 
-/** Endpoint stems on the Stacy CDN (CONVENTIONS.md #45). */
 const STACY_ENDPOINT = {
   DAYS: 'SCH_DaysByDiscipline',
   H2H: 'SCH_ByDisciplineH2H',
@@ -28,15 +27,11 @@ const STACY_ENDPOINT = {
 
 const ACCEPT_JSON = 'application/json';
 
-/**
- * Lower-level fetch + Zod parse with consistent error semantics.
- * CONVENTIONS.md #45 — we use this CDN's JSON endpoints directly.
- */
+/** Fetch + Zod parse with consistent error semantics for the Stacy CDN. */
 async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(url, {
     method: 'GET',
     headers: { Accept: ACCEPT_JSON },
-    // CORS verified open (CONVENTIONS.md #22, #45). No special mode needed.
   });
 
   if (!res.ok) {

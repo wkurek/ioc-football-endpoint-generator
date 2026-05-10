@@ -4,8 +4,9 @@ import type { SchSchedule } from '@/data/api/schemas';
 import { queryKeys } from './queryKeys';
 
 /**
- * Fetches H2H for each of the given dates in parallel and returns the merged
- * list of HTEAM-only schedules (CONVENTIONS.md #16).
+ * Fetches H2H for each of the given dates in parallel; returns the merged
+ * list of HTEAM-only schedules (medal ceremonies are filtered out — they have
+ * `eventUnit.type === "NONE"`).
  */
 export function useH2HForDates(dates: readonly string[]) {
   const results = useQueries({

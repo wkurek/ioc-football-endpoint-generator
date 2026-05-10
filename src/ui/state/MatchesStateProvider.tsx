@@ -75,10 +75,9 @@ export function MatchesStateProvider({ children }: MatchesStateProviderProps) {
   const pipeline = usePipeline({ enabled });
   const selection = useSelection();
   const [criteria, setCriteria] = useState<FilterCriteria>(EMPTY_FILTER);
-  // Default order from `compareMatchSummary` (CONVENTIONS.md #15): `kickoff ASC`,
-  // tie-broken on `eventUnit.code`. We surface the primary key as the sort indicator;
-  // the pipeline pre-sorts the data, and TanStack's stable sort preserves the
-  // tiebreaker ordering for matches sharing the same kickoff.
+  // Initial header indicator. Pipeline pre-sorts by `(kickoff, code)` and
+  // TanStack's stable sort preserves the tiebreaker on shared kickoffs, so
+  // surfacing only `kickoff` as the active sort key is enough.
   const [sorting, setSorting] = useState<SortingState>([{ id: 'kickoff', desc: false }]);
 
   const value = useMemo<MatchesStateContextValue>(

@@ -3,12 +3,6 @@ import type { ResTeamItemT } from '@/data/api/schemas';
 import { EueCode } from '@/data/api/codes';
 import { TranslatableError } from '@/domain/errors';
 
-/**
- * Build the `teams` block (CONVENTIONS.md #31).
- *
- * Source: RES.results.items[]. `HOME_AWAY` from each item's eventUnitEntries
- * tells us which is which. Names from `participant.name`.
- */
 export function buildTeams(items: ResTeamItemT[]): Teams {
   let home: string | undefined;
   let away: string | undefined;
