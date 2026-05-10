@@ -1,5 +1,6 @@
 import { MatchStatus } from '@/domain/types';
 import { ApiStatusCode } from '@/data/api/codes';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Maps OG2024 `status.code` to our output `status` value (CONVENTIONS.md #12).
@@ -11,5 +12,5 @@ import { ApiStatusCode } from '@/data/api/codes';
  */
 export function mapStatus(statusCode: string): MatchStatus {
   if (statusCode === ApiStatusCode.FINISHED) return MatchStatus.FULL_TIME;
-  throw new Error(`mapStatus: unsupported status.code "${statusCode}" (only FINISHED is mapped)`);
+  throw new TranslatableError('errors.status.unsupported', { code: statusCode });
 }

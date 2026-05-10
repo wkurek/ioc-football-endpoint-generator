@@ -9,11 +9,11 @@ describe('mapStatus', () => {
   it.each(['SCHEDULED', 'LIVE', 'POSTPONED', 'CANCELLED', 'RESCHEDULED', 'ABANDONED', ''])(
     'throws on unsupported code %j',
     (code) => {
-      expect(() => mapStatus(code)).toThrow(/unsupported status\.code/);
+      expect(() => mapStatus(code)).toThrow(/errors\.status\.unsupported/);
     },
   );
 
   it('throws on unknown codes (defensive)', () => {
-    expect(() => mapStatus('SOME_NEW_CODE')).toThrow(/unsupported status\.code/);
+    expect(() => mapStatus('SOME_NEW_CODE')).toThrow(/errors\.status\.unsupported/);
   });
 });

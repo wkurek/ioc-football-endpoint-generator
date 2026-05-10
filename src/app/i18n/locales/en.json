@@ -76,7 +76,65 @@
     "h2hPartial": "{{failed}} of {{total}} match-day requests failed",
     "resPartial": "{{failed}} match endpoint(s) failed to load",
     "buildErrors": "{{count}} build error(s)",
-    "matchResError": "Failed to load match data: {{error}}"
+    "matchResError": "Failed to load match data: {{error}}",
+    "matchNotFound": "Match not found: {{code}}",
+    "unknownError": "Unknown error"
+  },
+  "errors": {
+    "matchSummary": {
+      "detectTournament": "Cannot detect tournament from \"{{code}}\"",
+      "detectPhase": "Cannot detect phase from \"{{code}}\"",
+      "detectGroupLetter": "No group letter in \"{{code}}\""
+    },
+    "lineups": {
+      "noTeamItem": "No team item with HOME_AWAY={{target}}",
+      "missingFormation": "Missing FORMATION for team {{team}}",
+      "noHeadCoach": "No head coach for team {{team}}",
+      "invalidBib": "Player bib \"{{bib}}\" is not a valid integer",
+      "missingPosition": "Missing POSITION for athlete {{name}} (bib {{bib}})"
+    },
+    "score": {
+      "missingTOT": "Missing TOT period in score data",
+      "missingH1": "Missing H1 period in score data",
+      "cannotParseInt": "Cannot parse {{label}}=\"{{raw}}\" as integer"
+    },
+    "scorers": {
+      "tooManyScorers": "Action {{actionId}} has {{count}} SCR athletes (expected ≤1) — schema drift?",
+      "tooManyAssists": "Action {{actionId}} has {{count}} ASSIST athletes (expected ≤1) — schema drift?",
+      "unknownTeamCode": "Unknown team code \"{{teamCode}}\" — not present in items[]",
+      "scorerNotInRoster": "Scorer bib \"{{bib}}\" not in team \"{{team}}\" roster",
+      "ownGoalUnknownTeam": "Unknown OG team code \"{{teamCode}}\" — not present in items[]",
+      "ownGoalNotInRoster": "OG scorer bib \"{{bib}}\" not in team \"{{team}}\" roster",
+      "ownGoalNoOpponent": "Cannot find opposing team for own-goal by {{scorer}} (only one team in items[])"
+    },
+    "status": {
+      "unsupported": "Unsupported status code \"{{code}}\" (only FINISHED is mapped)"
+    },
+    "teams": {
+      "noHome": "No item with HOME_AWAY=HOME",
+      "noAway": "No item with HOME_AWAY=AWAY"
+    },
+    "venue": {
+      "missingDescription": "Missing venue.description",
+      "missingLongDescription": "Missing location.longDescription"
+    },
+    "position": {
+      "unknownBroad": "Unknown broad position code \"{{code}}\""
+    },
+    "round": {
+      "noMatchWithCode": "No match with code \"{{code}}\""
+    },
+    "export": {
+      "duplicateCode": "Duplicate eventUnit.code \"{{code}}\""
+    },
+    "stacy": {
+      "http": "HTTP {{status}} {{statusText}}",
+      "schema": "Schema validation failed: {{detail}}"
+    },
+    "compare": {
+      "fetchHttp": "HTTP {{status}} {{statusText}}",
+      "fetchInvalidJson": "Response is not valid JSON"
+    }
   },
   "match": {
     "tabs": {

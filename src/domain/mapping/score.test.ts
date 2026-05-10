@@ -76,6 +76,6 @@ describe('buildScore', () => {
           ['TOT', '1', '0'],
         ]),
       ),
-    ).toThrow(/cannot parse/);
+    ).toThrow(/errors\.score\.cannotParseInt/);
   });
 });

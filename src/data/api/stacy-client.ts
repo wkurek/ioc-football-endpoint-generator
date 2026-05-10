@@ -7,6 +7,7 @@ import {
   type DaysByDiscipline,
   type ResByRscH2H,
 } from './schemas';
+import { TranslatableError, type ErrorParams } from '@/domain/errors';
 
 const STACY_BASE_URL = 'https://stacy.olympics.com/OG2024/data';
 
@@ -38,30 +39,33 @@ async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T> {
   });
 
   if (!res.ok) {
-    throw new StacyApiError(`HTTP ${res.status} ${res.statusText} for ${url}`, res.status, url);
+    throw new StacyApiError(
+      'errors.stacy.http',
+      { status: res.status, statusText: res.statusText },
+      res.status,
+      url,
+    );
   }
 
   const json = (await res.json()) as unknown;
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    throw new StacyApiError(
-      `Schema validation failed for ${url}: ${parsed.error.issues
-        .map((i) => `${i.path.join('.')}: ${i.message}`)
-        .join('; ')}`,
-      undefined,
-      url,
-    );
+    const detail = parsed.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('; ');
+    throw new StacyApiError('errors.stacy.schema', { detail }, undefined, url);
   }
   return parsed.data;
 }
 
-export class StacyApiError extends Error {
+export class StacyApiError extends TranslatableError {
   constructor(
-    message: string,
-    public readonly status?: number,
-    public readonly url?: string,
+    key: string,
+    params: ErrorParams | undefined,
+    public readonly status: number | undefined,
+    public readonly url: string | undefined,
   ) {
-    super(message);
+    super(key, params);
     this.name = 'StacyApiError';
   }
 }

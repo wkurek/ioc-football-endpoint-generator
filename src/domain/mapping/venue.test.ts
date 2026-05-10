@@ -39,7 +39,7 @@ describe('buildVenue', () => {
         venueDescription: undefined,
         locationLongDescription: 'X, Y',
       }),
-    ).toThrow(/venue\.description/);
+    ).toThrow(/errors\.venue\.missingDescription/);
   });
 
   it('throws when location.longDescription is missing', () => {
@@ -48,6 +48,6 @@ describe('buildVenue', () => {
         venueDescription: 'X',
         locationLongDescription: undefined,
       }),
-    ).toThrow(/location\.longDescription/);
+    ).toThrow(/errors\.venue\.missingLongDescription/);
   });
 });

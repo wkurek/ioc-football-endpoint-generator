@@ -1,6 +1,7 @@
 import { Side, type Teams } from '@/domain/types';
 import type { ResTeamItemT } from '@/data/api/schemas';
 import { EueCode } from '@/data/api/codes';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Build the `teams` block (CONVENTIONS.md #31).
@@ -16,7 +17,7 @@ export function buildTeams(items: ResTeamItemT[]): Teams {
     if (ha === Side.HOME) home = item.participant.name;
     else if (ha === Side.AWAY) away = item.participant.name;
   }
-  if (!home) throw new Error('buildTeams: no item with HOME_AWAY=HOME');
-  if (!away) throw new Error('buildTeams: no item with HOME_AWAY=AWAY');
+  if (!home) throw new TranslatableError('errors.teams.noHome');
+  if (!away) throw new TranslatableError('errors.teams.noAway');
   return { home, away };
 }

@@ -1,4 +1,5 @@
 import type { Venue } from '@/domain/types';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Build the `venue` block (CONVENTIONS.md #18, #31).
@@ -16,10 +17,10 @@ export function buildVenue(input: {
   locationLongDescription: string | undefined;
 }): Venue {
   if (!input.venueDescription) {
-    throw new Error('buildVenue: missing venue.description');
+    throw new TranslatableError('errors.venue.missingDescription');
   }
   if (!input.locationLongDescription) {
-    throw new Error('buildVenue: missing location.longDescription');
+    throw new TranslatableError('errors.venue.missingLongDescription');
   }
   return {
     name: input.venueDescription,

@@ -1,4 +1,5 @@
 import type { Match } from '@/domain/types';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * One pair = one match in the bulk export. The `code` carries `eventUnit.code`,
@@ -31,7 +32,7 @@ export function exportBulkAsJson(entries: readonly MatchEntry[]): string {
   const map: Record<string, Match> = {};
   for (const entry of entries) {
     if (entry.code in map) {
-      throw new Error(`exportBulkAsJson: duplicate eventUnit.code "${entry.code}"`);
+      throw new TranslatableError('errors.export.duplicateCode', { code: entry.code });
     }
     map[entry.code] = entry.match;
   }

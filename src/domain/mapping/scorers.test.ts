@@ -114,7 +114,7 @@ describe.skipIf(!hasResAll)('buildScorers — defensive cardinality (CONVENTIONS
     comp.athletes!.push({ pbpat_role: 'SCR', pbpat_bib: 'X', pbpat_code: 'X', pbpat_order: '99' });
 
     expect(() => buildScorers(res)).toThrow(
-      new RegExp(`action ${action.pbpa_id} has \\d+ SCR athletes`),
+      new RegExp(`errors\\.scorers\\.tooManyScorers.*actionId=${action.pbpa_id}`),
     );
   });
 
@@ -124,7 +124,7 @@ describe.skipIf(!hasResAll)('buildScorers — defensive cardinality (CONVENTIONS
     comp.athletes!.push({ pbpat_role: 'ASSIST', pbpat_bib: 'X', pbpat_code: 'X', pbpat_order: '99' });
 
     expect(() => buildScorers(res)).toThrow(
-      new RegExp(`action ${action.pbpa_id} has \\d+ ASSIST athletes`),
+      new RegExp(`errors\\.scorers\\.tooManyAssists.*actionId=${action.pbpa_id}`),
     );
   });
 });

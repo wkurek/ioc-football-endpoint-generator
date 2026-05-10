@@ -6,6 +6,7 @@ import { mapStatus } from '@/domain/mapping/status';
 import { buildScore } from '@/domain/mapping/score';
 import { computeMatchNumberInPhase } from '@/domain/mapping/round';
 import { buildRound } from '@/domain/mapping/competition';
+import { TranslatableError } from '@/domain/errors';
 
 // Re-exported for backwards-compat with existing imports of `@/domain/matchSummary`.
 export { Phase, Tournament } from '@/domain/types';
@@ -83,7 +84,7 @@ export function detectTournament(eventUnitCode: string): Tournament {
   for (const [tournament, prefix] of Object.entries(TOURNAMENT_PREFIX) as [Tournament, string][]) {
     if (eventUnitCode.startsWith(prefix)) return tournament;
   }
-  throw new Error(`detectTournament: cannot detect tournament from "${eventUnitCode}"`);
+  throw new TranslatableError('errors.matchSummary.detectTournament', { code: eventUnitCode });
 }
 
 /**
@@ -115,13 +116,13 @@ export function detectPhase(eventUnitCode: string): Phase {
       typeof pattern === 'string' ? eventUnitCode.includes(pattern) : pattern.test(eventUnitCode);
     if (matches) return phase;
   }
-  throw new Error(`detectPhase: cannot detect phase from "${eventUnitCode}"`);
+  throw new TranslatableError('errors.matchSummary.detectPhase', { code: eventUnitCode });
 }
 
 export function detectGroupLetter(eventUnitCode: string): string {
   const m = GROUP_LETTER_RE.exec(eventUnitCode);
   if (!m || !m[1]) {
-    throw new Error(`detectGroupLetter: no group letter in "${eventUnitCode}"`);
+    throw new TranslatableError('errors.matchSummary.detectGroupLetter', { code: eventUnitCode });
   }
   return m[1];
 }

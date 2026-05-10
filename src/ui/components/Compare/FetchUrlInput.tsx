@@ -1,6 +1,8 @@
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, Loader2 } from 'lucide-react';
+import { TranslatableError } from '@/domain/errors';
+import { translateError } from '@/app/i18n/translateError';
 
 interface FetchUrlInputProps {
   /**
@@ -28,18 +30,21 @@ export function FetchUrlInput({ onFetched }: FetchUrlInputProps) {
         headers: { Accept: 'application/json' },
       });
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        throw new TranslatableError('errors.compare.fetchHttp', {
+          status: res.status,
+          statusText: res.statusText,
+        });
       }
       const text = await res.text();
       let parsed: unknown;
       try {
         parsed = JSON.parse(text);
       } catch {
-        throw new Error('Response is not valid JSON');
+        throw new TranslatableError('errors.compare.fetchInvalidJson');
       }
       onFetched(JSON.stringify(parsed, null, 2));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(translateError(e, t));
     } finally {
       setLoading(false);
     }

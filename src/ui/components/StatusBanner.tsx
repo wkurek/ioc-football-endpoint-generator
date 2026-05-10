@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Banner } from '@/ui/components/Banner';
 import { BannerKind, PipelinePhase } from '@/ui/types';
 import type { PipelineState } from '@/ui/hooks/usePipeline';
+import { translateError } from '@/app/i18n/translateError';
 
 interface StatusBannerProps {
   state: PipelineState;
@@ -16,7 +17,7 @@ export function StatusBanner({ state }: StatusBannerProps) {
   if (state.daysError) {
     return (
       <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={state.retry}>
-        {t('states.error')}: {state.daysError.message}
+        {t('states.error')}: {translateError(state.daysError, t)}
       </Banner>
     );
   }
@@ -29,7 +30,7 @@ export function StatusBanner({ state }: StatusBannerProps) {
     return (
       <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={state.retry}>
         {t('states.error')}
-        {firstError ? `: ${firstError.message}` : ''}
+        {firstError ? `: ${translateError(firstError, t)}` : ''}
       </Banner>
     );
   }

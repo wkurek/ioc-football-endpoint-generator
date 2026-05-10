@@ -1,4 +1,5 @@
 import type { SchSchedule } from '@/data/api/schemas';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Computes the 1-based match number within a phase (CONVENTIONS.md #6).
@@ -21,7 +22,7 @@ export function computeMatchNumberInPhase(
 ): number {
   const target = allMatches.find((m) => m.eventUnit.code === eventUnitCode);
   if (!target) {
-    throw new Error(`computeMatchNumberInPhase: no match with code "${eventUnitCode}"`);
+    throw new TranslatableError('errors.round.noMatchWithCode', { code: eventUnitCode });
   }
   const samePhase = allMatches
     .filter((m) => m.eventUnit.longDescription === target.eventUnit.longDescription)

@@ -1,5 +1,6 @@
 import type { Score } from '@/domain/types';
 import { PeriodCode } from '@/data/api/codes';
+import { TranslatableError } from '@/domain/errors';
 import type { z } from 'zod';
 
 interface PeriodLike {
@@ -24,8 +25,8 @@ export function buildScore(periods: PeriodLike[]): Score {
   const tot = periods.find((p) => p.p_code === PeriodCode.TOTAL);
   const h1 = periods.find((p) => p.p_code === PeriodCode.FIRST_HALF);
 
-  if (!tot) throw new Error('buildScore: missing TOT period');
-  if (!h1) throw new Error('buildScore: missing H1 period');
+  if (!tot) throw new TranslatableError('errors.score.missingTOT');
+  if (!h1) throw new TranslatableError('errors.score.missingH1');
 
   return {
     home: parseScoreValue(tot.home.score, 'TOT.home'),
@@ -40,7 +41,7 @@ export function buildScore(periods: PeriodLike[]): Score {
 function parseScoreValue(raw: string, label: string): number {
   const n = parseInt(raw, 10);
   if (Number.isNaN(n)) {
-    throw new Error(`buildScore: cannot parse ${label}="${raw}" as integer`);
+    throw new TranslatableError('errors.score.cannotParseInt', { label, raw });
   }
   return n;
 }

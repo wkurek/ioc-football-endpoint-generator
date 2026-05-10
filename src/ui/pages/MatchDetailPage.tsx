@@ -6,6 +6,7 @@ import { useMatchesState } from '@/ui/state/MatchesStateProvider';
 import { BannerKind, PipelinePhase } from '@/ui/types';
 import { Banner } from '@/ui/components/Banner';
 import { routes } from '@/ui/routes';
+import { translateError } from '@/app/i18n/translateError';
 import { MatchHeader } from '@/ui/components/MatchDetail/MatchHeader';
 import { MatchTabs } from '@/ui/components/MatchDetail/MatchTabs';
 import { MatchActions } from '@/ui/components/MatchDetail/MatchActions';
@@ -46,13 +47,13 @@ export function MatchDetailPage() {
 
       {!entry && pipeline.phase === PipelinePhase.READY && (
         <Banner kind={BannerKind.ERROR} icon={AlertTriangle}>
-          Match not found: {eventUnitCode}
+          {t('states.matchNotFound', { code: eventUnitCode })}
         </Banner>
       )}
 
       {entry && entry.buildError && (
         <Banner kind={BannerKind.ERROR} icon={AlertTriangle} onRetry={retry}>
-          Failed to build match: {entry.buildError.message}
+          {t('states.error')}: {translateError(entry.buildError, t)}
         </Banner>
       )}
 
@@ -62,7 +63,7 @@ export function MatchDetailPage() {
           icon={AlertTriangle}
           onRetry={() => retryMatch(entry.code)}
         >
-          {t('states.matchResError', { error: entry.resError.message })}
+          {t('states.matchResError', { error: translateError(entry.resError, t) })}
         </Banner>
       )}
 

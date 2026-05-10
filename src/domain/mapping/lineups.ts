@@ -9,6 +9,7 @@ import {
 } from '@/data/api/codes';
 import { formatPersonName } from './name';
 import { mapPosition } from './position';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Build the `lineups` block (CONVENTIONS.md #19, #24, #25, #26, #30).
@@ -36,7 +37,7 @@ function findTeamByHomeAway(items: ResTeamItemT[], target: Side): ResTeamItemT {
     it.eventUnitEntries.some((e) => e.eue_code === EueCode.HOME_AWAY && e.eue_value === target),
   );
   if (!found) {
-    throw new Error(`buildLineups: no team item with HOME_AWAY=${target}`);
+    throw new TranslatableError('errors.lineups.noTeamItem', { target });
   }
   return found;
 }
@@ -44,11 +45,11 @@ function findTeamByHomeAway(items: ResTeamItemT[], target: Side): ResTeamItemT {
 export function buildTeamLineup(item: ResTeamItemT): TeamLineup {
   const formation = item.eventUnitEntries.find((e) => e.eue_code === EueCode.FORMATION)?.eue_value;
   if (!formation) {
-    throw new Error(`buildTeamLineup: missing FORMATION for team ${item.participant.name}`);
+    throw new TranslatableError('errors.lineups.missingFormation', { team: item.participant.name });
   }
   const coachName = pickHeadCoachName(item.teamCoaches);
   if (!coachName) {
-    throw new Error(`buildTeamLineup: no head coach for team ${item.participant.name}`);
+    throw new TranslatableError('errors.lineups.noHeadCoach', { team: item.participant.name });
   }
   const athletesSorted = [...item.teamAthletes].sort(
     (a, b) => a.startSortOrder - b.startSortOrder,
@@ -108,14 +109,15 @@ export function isStarter(athlete: ResTeamAthleteT): boolean {
 export function toPlayer(athlete: ResTeamAthleteT): Player {
   const number = parseInt(athlete.bib, 10);
   if (Number.isNaN(number)) {
-    throw new Error(`toPlayer: bib "${athlete.bib}" is not a valid integer`);
+    throw new TranslatableError('errors.lineups.invalidBib', { bib: athlete.bib });
   }
   const broadPos = athlete.athlete.registeredEvents
     ?.[0]?.eventEntries.find((e) => e.ee_code === EeCode.POSITION)?.ee_value;
   if (!broadPos) {
-    throw new Error(
-      `toPlayer: missing POSITION for athlete ${athlete.athlete.name} (bib ${athlete.bib})`,
-    );
+    throw new TranslatableError('errors.lineups.missingPosition', {
+      name: athlete.athlete.name,
+      bib: athlete.bib,
+    });
   }
   return {
     name: formatPersonName({

@@ -2,6 +2,7 @@ import { GoalType, type Scorer } from '@/domain/types';
 import type { ResByRscH2H, ResPbpaActionT, ResTeamItemT } from '@/data/api/schemas';
 import { PbpaAction, PbpatRole, PeriodCode } from '@/data/api/codes';
 import { formatPersonName } from './name';
+import { TranslatableError } from '@/domain/errors';
 
 /**
  * Build the `scorers` array (CONVENTIONS.md #7, #9, #11, #29).
@@ -62,18 +63,20 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
       // the extras via `.find()` first-wins.
       const scorerEntries = scoringAthletes.filter((a) => a.pbpat_role === PbpatRole.SCORER);
       if (scorerEntries.length > 1) {
-        throw new Error(
-          `buildScorers: action ${action.pbpa_id} has ${scorerEntries.length} SCR athletes (expected ≤1) — schema drift?`,
-        );
+        throw new TranslatableError('errors.scorers.tooManyScorers', {
+          actionId: action.pbpa_id,
+          count: scorerEntries.length,
+        });
       }
       const scorerEntry = scorerEntries[0];
       if (!scorerEntry) continue;
 
       const assistEntries = scoringAthletes.filter((a) => a.pbpat_role === PbpatRole.ASSIST);
       if (assistEntries.length > 1) {
-        throw new Error(
-          `buildScorers: action ${action.pbpa_id} has ${assistEntries.length} ASSIST athletes (expected ≤1) — schema drift?`,
-        );
+        throw new TranslatableError('errors.scorers.tooManyAssists', {
+          actionId: action.pbpa_id,
+          count: assistEntries.length,
+        });
       }
       const assistEntry = assistEntries[0];
 
@@ -82,15 +85,16 @@ export function buildScorers(res: ResByRscH2H): Scorer[] {
 
       const team = teamsMeta.byTeamCode[scoringComp.pbpc_code];
       if (!team) {
-        throw new Error(
-          `buildScorers: unknown pbpc_code "${scoringComp.pbpc_code}" — not present in items[]`,
-        );
+        throw new TranslatableError('errors.scorers.unknownTeamCode', {
+          teamCode: scoringComp.pbpc_code,
+        });
       }
       const scorerName = team.bibToName[scorerEntry.pbpat_bib];
       if (!scorerName) {
-        throw new Error(
-          `buildScorers: scorer bib "${scorerEntry.pbpat_bib}" not in team "${team.name}" roster`,
-        );
+        throw new TranslatableError('errors.scorers.scorerNotInRoster', {
+          bib: scorerEntry.pbpat_bib,
+          team: team.name,
+        });
       }
 
       const goal: Intermediate = {
@@ -158,24 +162,23 @@ function buildOwnGoalScorer(
 
   const ownTeam = teamsMeta.byTeamCode[ownComp.pbpc_code];
   if (!ownTeam) {
-    throw new Error(
-      `buildScorers: unknown OG pbpc_code "${ownComp.pbpc_code}" — not present in items[]`,
-    );
+    throw new TranslatableError('errors.scorers.ownGoalUnknownTeam', {
+      teamCode: ownComp.pbpc_code,
+    });
   }
   const scorerName = ownTeam.bibToName[ownAthlete.pbpat_bib];
   if (!scorerName) {
-    throw new Error(
-      `buildScorers: OG scorer bib "${ownAthlete.pbpat_bib}" not in team "${ownTeam.name}" roster`,
-    );
+    throw new TranslatableError('errors.scorers.ownGoalNotInRoster', {
+      bib: ownAthlete.pbpat_bib,
+      team: ownTeam.name,
+    });
   }
 
   const beneficiaryEntry = Object.entries(teamsMeta.byTeamCode).find(
     ([code]) => code !== ownComp.pbpc_code,
   );
   if (!beneficiaryEntry) {
-    throw new Error(
-      `buildScorers: cannot find opposing team for OG by ${scorerName} (only one team in items[])`,
-    );
+    throw new TranslatableError('errors.scorers.ownGoalNoOpponent', { scorer: scorerName });
   }
 
   const minute = parseMinute(action.pbpa_When);

@@ -81,7 +81,7 @@ describe('computeMatchNumberInPhase', () => {
   });
 
   it('throws when target code is not in the list', () => {
-    expect(() => computeMatchNumberInPhase([], 'X')).toThrow(/no match with code/);
+    expect(() => computeMatchNumberInPhase([], 'X')).toThrow(/errors\.round\.noMatchWithCode/);
   });
 
   it('isolates phases (Men\'s Group A vs Women\'s Group A)', () => {

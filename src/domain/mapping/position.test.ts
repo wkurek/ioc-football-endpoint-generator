@@ -19,7 +19,7 @@ describe('mapPosition', () => {
   });
 
   it('throws on unknown codes', () => {
-    expect(() => mapPosition('XX')).toThrow(/unknown broad position code/);
+    expect(() => mapPosition('XX')).toThrow(/errors\.position\.unknownBroad/);
     expect(() => mapPosition('')).toThrow();
     expect(() => mapPosition('D01')).toThrow();
   });
