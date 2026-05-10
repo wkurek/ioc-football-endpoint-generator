@@ -183,7 +183,8 @@
     "unifiedView": "Unified",
     "identical": "✓ Identical — no differences",
     "summary": "+{{added}} -{{removed}}, {{unchanged}} unchanged",
-    "invalidJson": "Invalid JSON: {{error}}"
+    "invalidJson": "Invalid JSON: {{error}}",
+    "recomputing": "Recomputing diff…"
   },
   "theme": {
     "label": "Theme",

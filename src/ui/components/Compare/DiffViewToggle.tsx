@@ -4,9 +4,10 @@ import * as ToggleGroup from '@radix-ui/react-toggle-group';
 interface DiffViewToggleProps {
   splitView: boolean;
   onChange: (splitView: boolean) => void;
+  disabled?: boolean;
 }
 
-export function DiffViewToggle({ splitView, onChange }: DiffViewToggleProps) {
+export function DiffViewToggle({ splitView, onChange, disabled }: DiffViewToggleProps) {
   const { t } = useTranslation();
   const value = splitView ? 'split' : 'unified';
 
@@ -15,8 +16,9 @@ export function DiffViewToggle({ splitView, onChange }: DiffViewToggleProps) {
       type="single"
       value={value}
       onValueChange={(v) => v && onChange(v === 'split')}
+      disabled={disabled}
       aria-label="Diff view mode"
-      className="inline-flex rounded-md border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900"
+      className="inline-flex rounded-md border border-slate-200 bg-white p-0.5 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900"
     >
       <ToggleGroup.Item
         value="split"

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useMatchesState } from '@/ui/state/MatchesStateProvider';
 import { Banner } from '@/ui/components/Banner';
 import { EmptyState } from '@/ui/components/EmptyState';
@@ -26,6 +26,10 @@ export function ComparePage() {
   const [selectedCode, setSelectedCode] = useState<string | undefined>(routeCode);
   const [actualText, setActualText] = useState('');
   const [splitView, setSplitView] = useState(true);
+  // useTransition lets React commit `isPending=true` before re-rendering the
+  // heavy DiffViewer, so the spinner overlay appears immediately on click while
+  // the diff recomputes in the background.
+  const [isDiffPending, startDiffTransition] = useTransition();
 
   const selectedEntry = useMemo(
     () => (selectedCode ? pipeline.entries.find((e) => e.code === selectedCode) : undefined),
@@ -85,10 +89,32 @@ export function ComparePage() {
 
       {showDiff && !isIdentical && (
         <>
-          <div className="flex items-center justify-end">
-            <DiffViewToggle splitView={splitView} onChange={setSplitView} />
+          <div className="flex items-center justify-end gap-2">
+            {isDiffPending && (
+              <Loader2
+                className="h-4 w-4 animate-spin text-blue-600"
+                aria-label={t('compare.recomputing')}
+              />
+            )}
+            <DiffViewToggle
+              splitView={splitView}
+              onChange={(next) => startDiffTransition(() => setSplitView(next))}
+              disabled={isDiffPending}
+            />
           </div>
-          <DiffViewer expected={expectedJson} actual={actualJson} splitView={splitView} />
+          <div className="relative">
+            {isDiffPending && (
+              <div
+                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-slate-900/60"
+                aria-hidden="true"
+              >
+                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              </div>
+            )}
+            <div className={isDiffPending ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+              <DiffViewer expected={expectedJson} actual={actualJson} splitView={splitView} />
+            </div>
+          </div>
         </>
       )}
     </div>
