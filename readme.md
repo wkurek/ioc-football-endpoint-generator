@@ -1,6 +1,6 @@
 # OG2024 Football Endpoint Generator
 
-Take-home assignment: a single-page web app that generates "expected API endpoint" responses for every football match of the **Paris 2024 Olympic Games**. The output serves as reference data for automated tests against the (hypothetical) FootyScores API.
+Single-page web app that generates "expected API endpoint" responses for every football match of the **Paris 2024 Olympic Games**. The output serves as reference data for automated tests against the (hypothetical) FootyScores API.
 
 > Original assignment in [ASSIGNMENT.md](./ASSIGNMENT.md). Design decisions and per-field source mapping in [CONVENTIONS.md](./CONVENTIONS.md).
 
@@ -238,7 +238,3 @@ npm run test:run
 - **Player position output is a 4-value subset** of `example.json`'s 11 codes (CONVENTIONS.md §3). RB/LB/DM/AM/LW/RW/ST will never appear in the output — see CONVENTIONS.md for why granular Atos codes aren't deterministically mappable.
 
 ---
-
-## License
-
-Take-home assignment for Pretius — not for redistribution.

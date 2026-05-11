@@ -22,9 +22,8 @@
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": false,
 
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     "types": ["vite/client", "@testing-library/jest-dom"]

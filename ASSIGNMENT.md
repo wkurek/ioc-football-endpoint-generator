@@ -1,4 +1,4 @@
-# Take-Home Assignment
+# Assignment
 
 You are working on a pipeline responsible for validating the API implementation of the FootyScores application. FootyScores provides football (soccer) match data through a public API.
 
