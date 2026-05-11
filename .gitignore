@@ -49,3 +49,6 @@ coverage
 
 # Temp analysis artifacts (kept locally during development)
 .tmp-*
+
+# Editor tool local config
+.claude/
